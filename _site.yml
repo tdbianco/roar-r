@@ -15,7 +15,7 @@ navbar:
       - text: "Customising Contrasts"
         href: lmm-contrasts-tutorial.html
       - text: "Comparing OLS and LMM"
-        href: lmm-vs-ols.html
+        href: comp.html
       - text: "Modelling Heterogeneus Variance"
         href: lmm-het-var.html
 output:

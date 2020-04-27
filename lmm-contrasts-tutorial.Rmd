@@ -1,13 +1,5 @@
 ---
 title: "Going on with the Multilevel (mixed) Model in R: Contrasts"
-Date: April 24, 2018
-output:
-  html_document:
-    df_print: paged
-  html_notebook: default
-  pdf_document: default
-  word_document: default
-Author: Teresa Del Bianco
 ---
 
 # Initialize Session:

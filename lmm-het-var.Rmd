@@ -1,8 +1,5 @@
 ---
 title: "Mixed Modelling with Heterogeneous Variance"
-author: "Teresa Del Bianco"
-date: "23/01/2020"
-output: html_document
 ---
 
 ```{r setup, include=FALSE}

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Going on with the Multilevel (mixed) Model in R: Contrasts</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Hear me ROAR-R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="anova.html">Anova Essentials</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LMM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">LMM</li>
+    <li>
+      <a href="lmm-essential-tutorial.html">Essential Tutorial</a>
+    </li>
+    <li>
+      <a href="lmm-contrasts-tutorial.html">Customising Contrasts</a>
+    </li>
+    <li>
+      <a href="comp.html">Comparing OLS and LMM</a>
+    </li>
+    <li>
+      <a href="lmm-het-var.html">Modelling Heterogeneus Variance</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Going on with the Multilevel (mixed) Model in R: Contrasts</h1>
+
+</div>
+
+
+<div id="initialize-session" class="section level1">
+<h1>Initialize Session:</h1>
+<pre class="r"><code>data(&quot;sleepstudy&quot;)
+# install.packages(&quot;lmerTest&quot;)
+library(lmerTest)
+# library(ggplot2)
+library(knitr)
+opts_template$set(figure_small = list(fig.height = 4, fig.width = 6)) </code></pre>
+<pre class="r"><code>kable(head(sleepstudy))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Reaction</th>
+<th align="right">Days</th>
+<th align="left">Subject</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">249.5600</td>
+<td align="right">0</td>
+<td align="left">308</td>
+</tr>
+<tr class="even">
+<td align="right">258.7047</td>
+<td align="right">1</td>
+<td align="left">308</td>
+</tr>
+<tr class="odd">
+<td align="right">250.8006</td>
+<td align="right">2</td>
+<td align="left">308</td>
+</tr>
+<tr class="even">
+<td align="right">321.4398</td>
+<td align="right">3</td>
+<td align="left">308</td>
+</tr>
+<tr class="odd">
+<td align="right">356.8519</td>
+<td align="right">4</td>
+<td align="left">308</td>
+</tr>
+<tr class="even">
+<td align="right">414.6901</td>
+<td align="right">5</td>
+<td align="left">308</td>
+</tr>
+</tbody>
+</table>
+<p>Let’s replicate the mixed model with an interaction term that we fitted in the first part of this tutorial:</p>
+<pre class="r"><code># First let&#39;s create the additional variable Lunch
+set.seed(88)
+lunch &lt;- sample(c(0,1), replace=TRUE, size=18)
+sleepstudy$lunch &lt;- factor(lunch)
+head(sleepstudy)</code></pre>
+<pre><code>##   Reaction Days Subject lunch
+## 1 249.5600    0     308     0
+## 2 258.7047    1     308     0
+## 3 250.8006    2     308     1
+## 4 321.4398    3     308     0
+## 5 356.8519    4     308     1
+## 6 414.6901    5     308     1</code></pre>
+<p>We will have 2 variations in our model: first, we will consider Days as a categorical rather than a numerical variable. We do this because we want to be able to answer the question: does lunch affect differently day 1 from day 2/3/4 etc? In other words, is there a difference in a difference between days? Second, we will remove the fixed intercept from the model, by adding a “-1” to the formula. This addition does not change much the result but will make the successive operations a little bit more handy as it provides the complete display of all the factor levels.</p>
+<pre class="r"><code># Change the data type of Days from number to factor
+sleepstudy$Days &lt;- factor(as.character(sleepstudy$Days), levels = unique(sleepstudy$Days))
+levels(sleepstudy$Days)</code></pre>
+<pre><code>##  [1] &quot;0&quot; &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; &quot;5&quot; &quot;6&quot; &quot;7&quot; &quot;8&quot; &quot;9&quot;</code></pre>
+<pre class="r"><code># Fit the model
+
+m &lt;- lmer(Reaction 
+           ~ Days * lunch - 1 + 
+             ( 1 | Subject), 
+           data=sleepstudy)
+summary(m)</code></pre>
+<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
+## lmerModLmerTest]
+## Formula: Reaction ~ Days * lunch - 1 + (1 | Subject)
+##    Data: sleepstudy
+## 
+## REML criterion at convergence: 1649.2
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.2489 -0.4863  0.0425  0.5727  3.9744 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  Subject  (Intercept) 1372     37.04   
+##  Residual             1009     31.77   
+## Number of obs: 180, groups:  Subject, 18
+## 
+## Fixed effects:
+##              Estimate Std. Error       df t value Pr(&gt;|t|)    
+## Days0        246.8192    14.4893  85.1505  17.035   &lt;2e-16 ***
+## Days1        255.0855    14.5139  85.3531  17.575   &lt;2e-16 ***
+## Days2        273.5259    14.4860  85.1232  18.882   &lt;2e-16 ***
+## Days3        276.9178    14.4908  85.1647  19.110   &lt;2e-16 ***
+## Days4        284.7537    14.4952  85.1980  19.645   &lt;2e-16 ***
+## Days5        296.5687    14.4947  85.1951  20.461   &lt;2e-16 ***
+## Days6        304.6028    14.4943  85.1933  21.015   &lt;2e-16 ***
+## Days7        320.0012    14.4825  85.0944  22.096   &lt;2e-16 ***
+## Days8        333.5518    14.5143  85.3553  22.981   &lt;2e-16 ***
+## Days9        355.1328    14.4890  85.1489  24.511   &lt;2e-16 ***
+## lunch1        17.6987    15.8609 145.2865   1.116    0.266    
+## Days1:lunch1  -0.7602    22.3905 145.3677  -0.034    0.973    
+## Days2:lunch1 -32.3939    22.3023 145.0043  -1.452    0.149    
+## Days3:lunch1  -6.7652    22.3490 145.1893  -0.303    0.763    
+## Days4:lunch1 -10.6864    22.8456 146.1163  -0.468    0.641    
+## Days5:lunch1   3.8109    22.3134 145.0470   0.171    0.865    
+## Days6:lunch1  -4.0628    22.8441 146.1068  -0.178    0.859    
+## Days7:lunch1 -19.9499    22.3121 145.0389  -0.894    0.373    
+## Days8:lunch1 -12.1588    22.3645 145.2594  -0.544    0.588    
+## Days9:lunch1 -25.4056    22.8414 146.0916  -1.112    0.268    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre><code>## 
+## Correlation matrix not shown by default, as p = 20 &gt; 12.
+## Use print(x, correlation=TRUE)  or
+##     vcov(x)        if you need it</code></pre>
+<p>From the above output, we can see that there are main effects of individual days on reaction, no effect of lunch and various estimates of the interaction between lunch and a particular day. As in the previous tutorial, we should interpret main effects of days as effects without lunch (lunch = 0). In addition to the main effect of lunch, each day will receive an additional coefficient given by the interaction coefficient.</p>
+<p>The summary shows also that the interactions are not significant. But if we are interested in the differences between all the days and the first day of the experiment, Day 1? How can we compare all the other days to Day 1 in particular? First, we need to compute all the combinations of the levels of the factor Day and Lunch:</p>
+<pre class="r"><code>group &lt;- paste0(sleepstudy$Days, sleepstudy$lunch)
+group &lt;- aggregate(model.matrix(m) ~ group, FUN=mean)
+# group
+rownames(group) &lt;- group$group
+(group &lt;- group[,-1])</code></pre>
+<pre><code>##    Days0 Days1 Days2 Days3 Days4 Days5 Days6 Days7 Days8 Days9 lunch1
+## 00     1     0     0     0     0     0     0     0     0     0      0
+## 01     1     0     0     0     0     0     0     0     0     0      1
+## 10     0     1     0     0     0     0     0     0     0     0      0
+## 11     0     1     0     0     0     0     0     0     0     0      1
+## 20     0     0     1     0     0     0     0     0     0     0      0
+## 21     0     0     1     0     0     0     0     0     0     0      1
+## 30     0     0     0     1     0     0     0     0     0     0      0
+## 31     0     0     0     1     0     0     0     0     0     0      1
+## 40     0     0     0     0     1     0     0     0     0     0      0
+## 41     0     0     0     0     1     0     0     0     0     0      1
+## 50     0     0     0     0     0     1     0     0     0     0      0
+## 51     0     0     0     0     0     1     0     0     0     0      1
+## 60     0     0     0     0     0     0     1     0     0     0      0
+## 61     0     0     0     0     0     0     1     0     0     0      1
+## 70     0     0     0     0     0     0     0     1     0     0      0
+## 71     0     0     0     0     0     0     0     1     0     0      1
+## 80     0     0     0     0     0     0     0     0     1     0      0
+## 81     0     0     0     0     0     0     0     0     1     0      1
+## 90     0     0     0     0     0     0     0     0     0     1      0
+## 91     0     0     0     0     0     0     0     0     0     1      1
+##    Days1:lunch1 Days2:lunch1 Days3:lunch1 Days4:lunch1 Days5:lunch1
+## 00            0            0            0            0            0
+## 01            0            0            0            0            0
+## 10            0            0            0            0            0
+## 11            1            0            0            0            0
+## 20            0            0            0            0            0
+## 21            0            1            0            0            0
+## 30            0            0            0            0            0
+## 31            0            0            1            0            0
+## 40            0            0            0            0            0
+## 41            0            0            0            1            0
+## 50            0            0            0            0            0
+## 51            0            0            0            0            1
+## 60            0            0            0            0            0
+## 61            0            0            0            0            0
+## 70            0            0            0            0            0
+## 71            0            0            0            0            0
+## 80            0            0            0            0            0
+## 81            0            0            0            0            0
+## 90            0            0            0            0            0
+## 91            0            0            0            0            0
+##    Days6:lunch1 Days7:lunch1 Days8:lunch1 Days9:lunch1
+## 00            0            0            0            0
+## 01            0            0            0            0
+## 10            0            0            0            0
+## 11            0            0            0            0
+## 20            0            0            0            0
+## 21            0            0            0            0
+## 30            0            0            0            0
+## 31            0            0            0            0
+## 40            0            0            0            0
+## 41            0            0            0            0
+## 50            0            0            0            0
+## 51            0            0            0            0
+## 60            0            0            0            0
+## 61            1            0            0            0
+## 70            0            0            0            0
+## 71            0            1            0            0
+## 80            0            0            0            0
+## 81            0            0            1            0
+## 90            0            0            0            0
+## 91            0            0            0            1</code></pre>
+<p>The first column summarises the interaction between day and lunch: we have Day 0 with lunch 0 and 1, day 1 with lunch 0 and 1… and so on. The other columns contains zeros and ones that represent the specification of the factor combination (day 0 and lunch 0, for example) in the extended model matrix. Now we can specify which comparisons we want to compute. In this case, we want to compare all days with lunch with day 1 with lunch:</p>
+<pre class="r"><code>contrasts &lt;- rbind(group[&quot;11&quot;,] - group[&quot;21&quot;,],
+      group[&quot;11&quot;,] - group[&quot;31&quot;,],
+      group[&quot;11&quot;,] - group[&quot;41&quot;,],
+      group[&quot;11&quot;,] - group[&quot;51&quot;,],
+      group[&quot;11&quot;,] - group[&quot;61&quot;,],
+      group[&quot;11&quot;,] - group[&quot;71&quot;,],
+      group[&quot;11&quot;,] - group[&quot;81&quot;,],
+      group[&quot;11&quot;,] - group[&quot;91&quot;,])
+head(contrasts)</code></pre>
+<pre><code>##     Days0 Days1 Days2 Days3 Days4 Days5 Days6 Days7 Days8 Days9 lunch1
+## 11      0     1    -1     0     0     0     0     0     0     0      0
+## 111     0     1     0    -1     0     0     0     0     0     0      0
+## 112     0     1     0     0    -1     0     0     0     0     0      0
+## 113     0     1     0     0     0    -1     0     0     0     0      0
+## 114     0     1     0     0     0     0    -1     0     0     0      0
+## 115     0     1     0     0     0     0     0    -1     0     0      0
+##     Days1:lunch1 Days2:lunch1 Days3:lunch1 Days4:lunch1 Days5:lunch1
+## 11             1           -1            0            0            0
+## 111            1            0           -1            0            0
+## 112            1            0            0           -1            0
+## 113            1            0            0            0           -1
+## 114            1            0            0            0            0
+## 115            1            0            0            0            0
+##     Days6:lunch1 Days7:lunch1 Days8:lunch1 Days9:lunch1
+## 11             0            0            0            0
+## 111            0            0            0            0
+## 112            0            0            0            0
+## 113            0            0            0            0
+## 114           -1            0            0            0
+## 115            0           -1            0            0</code></pre>
+<pre class="r"><code>library(multcomp)
+
+# Transform into Matrix
+contrast.matrix &lt;- rbind(&quot;Lunch on Day 1 versus Lunch on Day 2&quot;=as.numeric(contrasts[1,]),
+                         &quot;Lunch on Day 1 versus Lunch on Day 3&quot;=as.numeric(contrasts[2,]),
+                         &quot;Lunch on Day 1 versus Lunch on Day 4&quot;=as.numeric(contrasts[3,]),
+                         &quot;Lunch on Day 1 versus Lunch on Day 5&quot;=as.numeric(contrasts[4,]),
+                         &quot;Lunch on Day 1 versus Lunch on Day 6&quot;=as.numeric(contrasts[5,]),
+                         &quot;Lunch on Day 1 versus Lunch on Day 7&quot;=as.numeric(contrasts[6,]),
+                         &quot;Lunch on Day 1 versus Lunch on Day 8&quot;=as.numeric(contrasts[7,]),
+                         &quot;Lunch on Day 1 versus Lunch on Day 9&quot;=as.numeric(contrasts[8,]))
+
+comparisons &lt;- summary(glht(m, contrast.matrix))
+
+comparisons</code></pre>
+<pre><code>## 
+##   Simultaneous Tests for General Linear Hypotheses
+## 
+## Fit: lmer(formula = Reaction ~ Days * lunch - 1 + (1 | Subject), data = sleepstudy)
+## 
+## Linear Hypotheses:
+##                                           Estimate Std. Error z value
+## Lunch on Day 1 versus Lunch on Day 2 == 0    13.19      14.51   0.909
+## Lunch on Day 1 versus Lunch on Day 3 == 0   -15.83      14.53  -1.089
+## Lunch on Day 1 versus Lunch on Day 4 == 0   -19.74      14.36  -1.375
+## Lunch on Day 1 versus Lunch on Day 5 == 0   -46.05      14.70  -3.134
+## Lunch on Day 1 versus Lunch on Day 6 == 0   -46.21      14.53  -3.180
+## Lunch on Day 1 versus Lunch on Day 7 == 0   -45.73      14.52  -3.148
+## Lunch on Day 1 versus Lunch on Day 8 == 0   -67.07      14.87  -4.510
+## Lunch on Day 1 versus Lunch on Day 9 == 0   -75.40      14.68  -5.137
+##                                           Pr(&gt;|z|)    
+## Lunch on Day 1 versus Lunch on Day 2 == 0   0.9267    
+## Lunch on Day 1 versus Lunch on Day 3 == 0   0.8346    
+## Lunch on Day 1 versus Lunch on Day 4 == 0   0.6315    
+## Lunch on Day 1 versus Lunch on Day 5 == 0   0.0120 *  
+## Lunch on Day 1 versus Lunch on Day 6 == 0   0.0103 *  
+## Lunch on Day 1 versus Lunch on Day 7 == 0   0.0112 *  
+## Lunch on Day 1 versus Lunch on Day 8 == 0   &lt;0.001 ***
+## Lunch on Day 1 versus Lunch on Day 9 == 0   &lt;0.001 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## (Adjusted p values reported -- single-step method)</code></pre>
+<p>We can see from this output that, even if the p-values of the interaction effects were not significant, the effect of lunch in different days is different. In this example, The difference in Reaction progressively grows and becomes significantly different from Day 1 starting from Day 5.</p>
+<p>Let’s format the results of the contrasts test into a table:</p>
+<pre class="r"><code>pq &lt;- comparisons$test
+
+mtests &lt;- data.frame(pq$coefficients, pq$sigma, pq$tstat, pq$pvalues)
+error &lt;- attr(pq$pvalues, &quot;error&quot;)
+pname &lt;- switch(comparisons$alternativ, 
+                 less = paste(&quot;Pr(&lt;&quot;, ifelse(comparisons$df ==0, &quot;z&quot;, &quot;t&quot;), &quot;)&quot;, 
+                              sep = &quot;&quot;), 
+                 greater = paste(&quot;Pr(&gt;&quot;, ifelse(comparisons$df == 0, &quot;z&quot;, &quot;t&quot;), &quot;)&quot;, 
+                                 sep = &quot;&quot;), 
+                 two.sided = paste(&quot;Pr(&gt;|&quot;, ifelse(comparisons$df == 0, &quot;z&quot;, &quot;t&quot;), &quot;|)&quot;, 
+                                   sep = &quot;&quot;))                                   
+
+colnames(mtests) &lt;- c(&quot;Estimate&quot;, &quot;Std.Error&quot;, ifelse(comparisons$df ==0, 
+                                                      &quot;zvalue&quot;, &quot;tvalue&quot;), pname)
+
+library(dplyr)
+mtests &lt;- mtests %&gt;%
+  add_rownames(&quot;Parameters&quot;) %&gt;%
+  mutate(`Pr(&gt;|z|)`=ifelse(`Pr(&gt;|z|)`&lt; 0.001, 
+                           &quot;&lt; 0.001&quot;, 
+                           ifelse(`Pr(&gt;|z|)` &lt; 0.01, 
+                                  &quot;&lt; 0.01&quot;,
+                                  ifelse(`Pr(&gt;|z|)` &lt; 0.05, 
+                                         &quot;&lt; 0.05&quot;,
+                                         paste(round(`Pr(&gt;|z|)`,
+                                                     4)))))) %&gt;%
+  mutate_if(is.numeric, funs(round(.,
+                                   digits=2)))
+kable(mtests)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Parameters</th>
+<th align="right">Estimate</th>
+<th align="right">Std.Error</th>
+<th align="right">zvalue</th>
+<th align="left">Pr(&gt;|z|)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Lunch on Day 1 versus Lunch on Day 2</td>
+<td align="right">13.19</td>
+<td align="right">14.51</td>
+<td align="right">0.91</td>
+<td align="left">0.9267</td>
+</tr>
+<tr class="even">
+<td align="left">Lunch on Day 1 versus Lunch on Day 3</td>
+<td align="right">-15.83</td>
+<td align="right">14.53</td>
+<td align="right">-1.09</td>
+<td align="left">0.8346</td>
+</tr>
+<tr class="odd">
+<td align="left">Lunch on Day 1 versus Lunch on Day 4</td>
+<td align="right">-19.74</td>
+<td align="right">14.36</td>
+<td align="right">-1.37</td>
+<td align="left">0.6315</td>
+</tr>
+<tr class="even">
+<td align="left">Lunch on Day 1 versus Lunch on Day 5</td>
+<td align="right">-46.05</td>
+<td align="right">14.70</td>
+<td align="right">-3.13</td>
+<td align="left">&lt; 0.05</td>
+</tr>
+<tr class="odd">
+<td align="left">Lunch on Day 1 versus Lunch on Day 6</td>
+<td align="right">-46.21</td>
+<td align="right">14.53</td>
+<td align="right">-3.18</td>
+<td align="left">&lt; 0.05</td>
+</tr>
+<tr class="even">
+<td align="left">Lunch on Day 1 versus Lunch on Day 7</td>
+<td align="right">-45.73</td>
+<td align="right">14.52</td>
+<td align="right">-3.15</td>
+<td align="left">&lt; 0.05</td>
+</tr>
+<tr class="odd">
+<td align="left">Lunch on Day 1 versus Lunch on Day 8</td>
+<td align="right">-67.07</td>
+<td align="right">14.87</td>
+<td align="right">-4.51</td>
+<td align="left">&lt; 0.001</td>
+</tr>
+<tr class="even">
+<td align="left">Lunch on Day 1 versus Lunch on Day 9</td>
+<td align="right">-75.40</td>
+<td align="right">14.68</td>
+<td align="right">-5.14</td>
+<td align="left">&lt; 0.001</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
