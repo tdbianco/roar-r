@@ -1,0 +1,12 @@
+name: "roar-r"
+output_dir: "docs"
+navbar:
+  title: "Hear me ROAR-R"
+  left:
+  - text: "Home"
+    href: index.html
+  - text: "Speed and Distance"
+    href: lmm-essential-tutorial.html
+output:
+  html_document:
+theme: cosmo

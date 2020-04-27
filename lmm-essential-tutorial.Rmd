@@ -1,11 +1,5 @@
 ---
 title: "Fitting and Interpreting a Multilevel (mixed) Model in R"
-Date: April 24th, 2018
-output:
-  html_document:
-    df_print: paged
-    toc: yes
-Author: Teresa Del Bianco
 ---
 
 # Initialize Session:
