@@ -1,10 +1,5 @@
 ---
 title: "ANOVA - Analysis of Variance"
-author: "Teresa Del Bianco"
-date: "18 maggio 2017"
-output: 
-  html_document: 
-    toc: yes
 ---
 This is based on my notes of the statistics course given by Prof. Brian Dillon (UMass Amherst).
 

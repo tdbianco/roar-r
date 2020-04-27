@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>LMM VS OLS</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Hear me ROAR-R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="anova.html">Anova Essentials</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LMM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">LMM</li>
+    <li>
+      <a href="lmm-essential-tutorial.html">Essential Tutorial</a>
+    </li>
+    <li>
+      <a href="lmm-contrasts-tutorial.html">Customising Contrasts</a>
+    </li>
+    <li>
+      <a href="comp.html">Comparing OLS and LMM</a>
+    </li>
+    <li>
+      <a href="lmm-het-var.html">Modelling Heterogeneus Variance</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">LMM VS OLS</h1>
+
+</div>
+
+
+<p>Here we present a comparison between the standard least-squared regression model and mixed modelling. When we want to obtain individual beta coefficients (1 for each individual), why should we do a mixed models - entering the individual as random effect), rather than 1) running a lsm with individual as a predictor 2) running a separate lsm for each subject?</p>
+<div id="method" class="section level1">
+<h1>Method</h1>
+<p>We fit 3 linear regressions:</p>
+<ul>
+<li><p>Non-pooled ordinary least squared regression (OLS) with the average proportional looking time (PLT) as the response variable. In order to obtain a score for each participant, we excluded the average intercept from the calculation.</p></li>
+<li><p>Individual OLS with the average proportional looking time (PLT) as the response variable. Each regression included the individual participant’s data only.</p></li>
+<li><p>Multilevel regression (also know as mixed model) with the average proportional looking time (PLT) as the response variable. The random effect specification allowed for correlated varying intercept and slopes per participant.</p></li>
+</ul>
+<p>As an example, we are going to enter a continous variable, IQ, as unique predictor, and evaluate the change in the beta coefficient of the Intercept base on standard errors and N of observations. The beta coefficient represents the unstandardised effect size of each component; the standard error represents a measure of precision around the beta coefficient.</p>
+<p>For each regression type, the beta coefficient and the standard errors correspond to:</p>
+<ul>
+<li><p>Non-pooled OLS: the intercept corresponds to the individual estimate of the participant’s beta coefficient and its standard error. We obtained the individual estimate/error of the Intercept from the interaction between the time component and the participant level. In this case, the standard error corresponds to the square root of the sample variance, or mean squared error (MSE). The formula of the non-pooled OLS looks like: DV ~ IQ * Participant</p></li>
+<li><p>Individual OLS: we obtained individual estimates and standard errors of intercept; we derived the degrees of freedom from actual number of observations per participant. In this case, the standard error refers to the individual variance MSE. The formula of the non-pooled OLS looks like: for i in total(Participants), DV(i) ~ IQ(i)</p></li>
+<li><p>Multilevel model: we extracted the individual coefficients, corresponding to the sum of the fixed effect and the individual variance component (as specified in the random effect). In this case, we assumed as standard error the joint MSE of the summated variances of the fixed and the random effect. The formula of the non-pooled OLS looks like: DV ~ IQ + (1|Participant).</p></li>
+</ul>
+</div>
+<div id="linear-regression" class="section level1">
+<h1>Linear regression</h1>
+<p>Sample ds:</p>
+<pre><code>##       X           ID group Stimulus prop_valid    age.y schedule_adj
+## 1  7506 491998749681   ASD  static1  0.9990864 23.72329       Adults
+## 2  7989 317719510819    TD  static2  0.7051389 13.71233  Adolescents
+## 3 10053 653262752197   ASD  static5  0.7147841 13.28767  Adolescents
+## 4 10524 494344414167    TD  static6  0.9686047 20.36986       Adults
+## 5  9905 449830790175   ASD  static5  0.7887874 20.40000       Adults
+##      sex fsiq4_all SRS_tscore  AOI   prop.LT
+## 1   Male 111.00000         74 head 0.4777621
+## 2   Male 111.00000         NA head 0.4854953
+## 3   Male 109.00000         87 head 0.1246805
+## 4   Male 108.03571         NA head 0.1985937
+## 5 Female  81.98971         66 head 0.6727388</code></pre>
+<div id="ols-with-complete-pooling" class="section level2">
+<h2>OLS with Complete pooling</h2>
+<p>This is a standard regression that does not include individual estimates of beta:</p>
+<pre class="r"><code>mod_lm_poo&lt;-lm(prop.LT~fsiq4_all,data=data_head)
+summary(mod_lm_poo)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = prop.LT ~ fsiq4_all, data = data_head)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.38301 -0.15585 -0.00821  0.14268  0.60290 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 0.3232367  0.0179369  18.021  &lt; 2e-16 ***
+## fsiq4_all   0.0005693  0.0001734   3.282  0.00104 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1965 on 3587 degrees of freedom
+##   (31 observations deleted due to missingness)
+## Multiple R-squared:  0.002995,   Adjusted R-squared:  0.002717 
+## F-statistic: 10.77 on 1 and 3587 DF,  p-value: 0.001039</code></pre>
+</div>
+<div id="ols-with-no-pooling" class="section level2">
+<h2>OLS with No pooling</h2>
+<p>This standard regression does include individual estimates of beta because ID is entered as a preditor.</p>
+<pre class="r"><code>mod_lm_npoo&lt;-lm(prop.LT~fsiq4_all+ID-1,data=data_head)
+coef &lt;- summary(mod_lm_npoo)$coefficients
+coef.ls.npoo &lt;- rbind(data.frame(ID=gsub(pattern=&quot;ID&quot;, replacement=&quot;&quot;, 
+                                         x=rownames(coef[-1,])), 
+                           Intercept=coef[-1,1],
+                           St.er.int=coef[-1,2],
+                           Method=&quot;ls_npoo&quot;))
+rownames(coef.ls.npoo) &lt;- NULL
+head(as.data.frame(
+  summary(mod_lm_npoo)$coefficients) %&gt;% tibble::rownames_to_column(&quot;id&quot;))</code></pre>
+<pre><code>##               id    Estimate   Std. Error  t value     Pr(&gt;|t|)
+## 1      fsiq4_all 0.002916958 0.0006554608 4.450240 8.894008e-06
+## 2 ID100693509718 0.180076511 0.1054493580 1.707706 8.779572e-02
+## 3 ID101129844643 0.190913976 0.1297673122 1.471202 1.413427e-01
+## 4 ID101414625982 0.180949497 0.1005375034 1.799821 7.199069e-02
+## 5 ID101900205031 0.190968718 0.0944966081 2.020906 4.337938e-02
+## 6 ID104324981539 0.118926600 0.0984103914 1.208476 2.269607e-01</code></pre>
+</div>
+<div id="individual-r-for-each-item" class="section level2">
+<h2>Individual r for each item</h2>
+<p>Here we run a standard regression for each subject, thus obtaining a different estimate for each individual.</p>
+<pre class="r"><code>coef.ls.ind &lt;- data.frame()
+ids &lt;- unique(data_head$ID)
+for (i in 1:length(ids)) {
+  d.s = subset(data_head, ID==ids[i])
+  if (is.nan(mean(d.s$fsiq4_all, na.rm=T))) 
+    {
+    coef.ls.ind = rbind(coef.ls.ind, data.frame(ID=(ids[i]), 
+                                      Intercept=NA,
+                                      St.er.int=NA,
+                                      Method=&quot;ls.ind&quot;))
+    }
+  
+  else 
+    {
+  ls.fit = lm(prop.LT~fsiq4_all, data=d.s)
+  s.ls.fit = summary(ls.fit)$coefficients
+  coef.ls.ind = rbind(coef.ls.ind, data.frame(ID=(ids[i]), 
+                                      Intercept=s.ls.fit[1,1],
+                                      St.er.int=s.ls.fit[1,2],
+                                      Method=&quot;ls.ind&quot;))
+  }
+}
+head(coef.ls.ind)</code></pre>
+<pre><code>##             ID Intercept  St.er.int Method
+## 1 100693509718 0.5069321 0.08726203 ls.ind
+## 2 101129844643 0.5176133 0.01931656 ls.ind
+## 3 101414625982 0.4755623 0.06617047 ls.ind
+## 4 101900205031 0.4428878 0.04011294 ls.ind
+## 5 104324981539 0.3989546 0.05598306 ls.ind
+## 6 109057020142 0.3317941 0.08336183 ls.ind</code></pre>
+</div>
+<div id="mixed-approach" class="section level2">
+<h2>Mixed approach</h2>
+<p>In the mixed model, we specify a random effect that will group the observations of 1 participant together. When the lmm is fit, each participant will have his/her own estimate fit.</p>
+<pre class="r"><code>library(lmerTest)
+library(sjstats)
+mod_mm&lt;-lmer(prop.LT~fsiq4_all+(1|ID),data=data_head)
+coef &lt;- coef(mod_mm)$ID$&#39;(Intercept)&#39;
+err &lt;- se(mod_mm)$ID$&#39;(Intercept)&#39;
+coef.mm &lt;- rbind(data.frame(ID=rownames(coef(mod_mm)$ID), 
+                           Intercept=coef,
+                           St.er.int=err,
+                           Method=&quot;mm&quot;))
+head(coef.mm)</code></pre>
+<pre><code>##             ID Intercept  St.er.int Method
+## 1 100693509718 0.3756492 0.05425632     mm
+## 2 101129844643 0.3599447 0.06011343     mm
+## 3 101414625982 0.3648617 0.05425632     mm
+## 4 101900205031 0.3543792 0.05425632     mm
+## 5 104324981539 0.3332097 0.05425632     mm
+## 6 107501679619 0.3596678 0.05597015     mm</code></pre>
+<pre class="r"><code>all_coef &lt;- rbind(coef.ls.npoo, coef.ls.ind, coef.mm)</code></pre>
+</div>
+</div>
+<div id="plot" class="section level1">
+<h1>Plot</h1>
+<div id="grouped-data" class="section level2">
+<h2>Grouped Data</h2>
+<pre class="r"><code>gp_data &lt;- data_head %&gt;%
+  group_by(ID) %&gt;%
+  # filter(ID==&quot;100693509718&quot; | ID==&quot;101129844643&quot;) %&gt;%
+  summarise(N=n(),
+            m.propLT=mean(prop.LT, na.rm=T),
+            sd.propLT=sd(prop.LT, na.rm=T)) %&gt;%
+  mutate(Nmax=as.factor(ifelse(N&lt;=3, 3, 
+                     ifelse(N&gt;3 &amp; N&lt;=5, 5,
+                            10)))) %&gt;%
+  inner_join(all_coef)
+  
+sp_gp_data &lt;- gp_data %&gt;%
+  group_by(Method) %&gt;%
+  summarise(N=n(),
+            m.propLT=mean(m.propLT, na.rm=T),
+            sd.propLT=sd(sd.propLT, na.rm=T),
+            m.int=mean(Intercept, na.rm=T))</code></pre>
+</div>
+<div id="filling-colors" class="section level2">
+<h2>Filling colors</h2>
+<pre class="r"><code>library(RColorBrewer)
+set.seed(88)
+n &lt;- length(unique(data_head$ID))
+n</code></pre>
+<pre><code>## [1] 634</code></pre>
+<pre class="r"><code>fill &lt;- grDevices::colors()
+fill1 &lt;- sample(fill, n)</code></pre>
+<p>In the below plots, we visualise the individual coefficients, corresponding to the sum of the fixed effect and the individual variance component (as specified in the random effect). The error bars represent the standard errors, calculated as the the joint MSE of the summated variances of the fixed, and the random effect for the mixed model.</p>
+<p>These plots nicely illustrates how standard errors of the individual coefficients of the DV increases for participants with fewer observations. This is the core of the essential difference between standard regression and mixed models: thanks to the random effect, the mixed model is able to treat coefficients at the individual level, thus weighting them for their reliability (eg, standard error and sample size) when calculating the fixed betas.</p>
+<p>In the first plot, we observe that the intercept estimated by the first two regressions is shifted to the more extreme values that, at the same time, are also the less reliable, as it is evident from plot 2 and 3. The estimate of the intercept instead is more centered because unreliable data points influence less the estimate of the fixed beta.</p>
+<p>In this kind of scenario, it is highly advisable to use mixed modelling, to avoid over/down-estimating a crucial estimate in a regression. While this is a strong argument, the usual condition of “having lots of missing data” might not sound as strong!</p>
+</div>
+<div id="on-mean" class="section level2">
+<h2>On mean</h2>
+<pre class="r"><code>library(ggplot2)
+comp_m &lt;- ggplot(data=(gp_data),
+       aes(x=m.propLT, y=Intercept, 
+           fill=ID, shape=Method)) +
+  facet_grid(~Method) +
+  
+  geom_errorbar(aes(x=m.propLT,
+                    ymin=Intercept-St.er.int,
+                    ymax=Intercept+St.er.int),
+                position=position_dodge(2),
+                color=&quot;black&quot;) +
+  
+  geom_jitter(aes(alpha=N), size=7) +
+  
+  scale_shape_manual(values = c(21,22,23)) +
+  
+  scale_fill_manual(values=fill1) + 
+  
+  guides(fill = &quot;none&quot;, size=&quot;none&quot;) +
+  
+  xlim(0,1) +
+  
+  # scale_size_continuous(range = c(5,15)) +
+  
+  geom_hline(yintercept = sp_gp_data$m.int[1]) + 
+  geom_hline(yintercept = sp_gp_data$m.int[2], linetype=&quot;dotted&quot;) + 
+  geom_hline(yintercept = sp_gp_data$m.int[3], linetype=&quot;dashed&quot;) +
+  
+  labs(caption=&quot;___ = non-pooled, \n . . . = individual \n _ _ _ = mixed&quot;) +
+  theme_bw()</code></pre>
+<pre class="r"><code>comp_m</code></pre>
+<p><img src="comp_files/figure-html/unnamed-chunk-10-1.png" width="3600" /></p>
+<pre class="r"><code># ggsave(filename = &quot;method-com-m.pdf&quot;, plot = comp_m, height = 9, width = 12)</code></pre>
+</div>
+<div id="on-n" class="section level2">
+<h2>On N</h2>
+<pre class="r"><code>comp_n1 &lt;- ggplot(data=gp_data,
+       aes(x=N, y=Intercept, 
+           fill=ID, shape=Method)) +
+  geom_errorbar(aes(ymin=Intercept-St.er.int,
+                    ymax=Intercept+St.er.int),
+                position=position_dodge(0.5),
+                color=&quot;black&quot;) +
+  geom_point(aes(size=N), position=position_dodge(0.5)) +
+  
+  scale_shape_manual(values = c(21,22,23)) +
+  
+  scale_fill_manual(values=fill1) + 
+  
+  guides(fill = &quot;none&quot;, size=&quot;none&quot;) +
+  
+  scale_size_continuous(range = c(5,15)) +
+  
+  geom_hline(yintercept = sp_gp_data$m.int[1]) + 
+  geom_hline(yintercept = sp_gp_data$m.int[2], linetype=&quot;dotted&quot;) + 
+  geom_hline(yintercept = sp_gp_data$m.int[3], linetype=&quot;dashed&quot;) +
+  
+  labs(caption=&quot;___ = non-pooled, \n . . . = individual \n _ _ _ = mixed&quot;) +
+  
+  geom_text(aes(x = 0, y = 0.38, label = &quot;- avg&quot;), 
+             size=2.5, col=&quot;red&quot;, hjust = 0) +
+  geom_text(aes(x = 0, y = 0.38+0.05, label = &quot;- CI 97.5%&quot;), 
+             size = 2.5, col=&quot;orangered&quot;, hjust = 0) +
+  geom_text(aes(x = 0, y = 0.38-0.05, label = &quot;- CI 2.5%&quot;), 
+             size = 2.5, col=&quot;orangered&quot;, hjust = 0) +
+  theme_bw()</code></pre>
+<pre class="r"><code>comp_n1</code></pre>
+<p><img src="comp_files/figure-html/unnamed-chunk-12-1.png" width="3600" /></p>
+<pre class="r"><code># ggsave(filename = &quot;method-com-n.pdf&quot;, plot = comp_n, height = 7, width = 11)</code></pre>
+<pre class="r"><code>comp_n2 &lt;- ggplot(data=gp_data,
+       aes(x=N, y=Intercept, 
+           fill=ID, shape=Method)) +
+  geom_errorbar(aes(ymin=Intercept-St.er.int,
+                    ymax=Intercept+St.er.int),
+                position=position_dodge(0.5),
+                color=&quot;black&quot;) +
+  geom_point(aes(size=N), position=position_dodge(0.5)) +
+  
+  scale_shape_manual(values = c(21,22,23)) +
+  
+  scale_fill_manual(values=fill1) + 
+  
+  guides(fill = &quot;none&quot;, size=&quot;none&quot;) +
+  
+  scale_size_continuous(range = c(5,15)) +
+  
+  geom_hline(yintercept = sp_gp_data$m.int[1]) + 
+  geom_hline(yintercept = sp_gp_data$m.int[2], linetype=&quot;dotted&quot;) + 
+  geom_hline(yintercept = sp_gp_data$m.int[3], linetype=&quot;dashed&quot;) +
+  
+  labs(caption=&quot;___ = non-pooled, \n . . . = individual \n _ _ _ = mixed&quot;) +
+  theme_bw() +
+  facet_grid(~Method)</code></pre>
+<pre class="r"><code>comp_n2</code></pre>
+<p><img src="comp_files/figure-html/unnamed-chunk-14-1.png" width="3600" /></p>
+<pre class="r"><code># ggsave(filename = &quot;method-com-n.pdf&quot;, plot = comp_n, height = 7, width = 11)</code></pre>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
