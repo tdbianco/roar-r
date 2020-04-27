@@ -1,0 +1,181 @@
+---
+title: "Mixed Modelling with Heterogeneous Variance"
+author: "Teresa Del Bianco"
+date: "23/01/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(lme4)
+library(nlme)
+```
+
+Here we present the implementation of mixed modelling with heterogenous variance components. Normally, we assume that the variance is equally distributed across stimuli, participants, timepoints... Sometimes, variance may systematically vary between conditions, and it might be useful to model this explicitly. One example might be measures taken in time after a certain event (eg, taking a drug) across a wide span: observations closer in time to the event might be more similar between each other, with variance dropping while the drug takes its effect. However, with time, the effect of the drug tend to disappear and variance may increase again. So heterogeneous variance is like an hypothesis and needs to be verified with model selection.  
+
+# Example data
+
+```{r}
+data <- sleepstudy
+head(data)
+```
+
+## Add a categorical variable
+
+```{r}
+set.seed(88)
+
+sg <- data.frame()
+sb <- unique(data$Subject)
+
+for (i in 1:length(sb)) {
+  g = sample(LETTERS[c(6,13)], size = 1)
+  sg = rbind(sg, cbind(Subject=paste(sb[i]), G=g))
+}
+
+head(sg)
+```
+
+```{r, message=FALSE}
+data_2 <- inner_join(data, sg, by="Subject")
+head(data_2)
+```
+
+Is variance different in the two groups?
+
+```{r}
+data_2 %>%
+  ggplot(aes(y=Reaction, x=Days, group=Subject)) +
+  geom_path() +
+  labs(caption="No evidence of heterogeneous variance")
+```
+
+```{r}
+data_2 %>%
+  ggplot(aes(y=Reaction, x=Days, group=Subject, color=G)) +
+  geom_path() +
+  labs(caption="Or maybe yes?")
+```
+
+it looks like group F have more outliers but more consistent variation, while group M have a slightly bigger variance (more spread out). 
+
+# Variance homogeneity model
+
+This model assumes common variance between and within person, irrespective of the variable G. This is the default model fit by lme with the standard specification of the ranom effect with 1 grouping variable:
+
+```{r}
+# Common models for between and within person variance
+model.01 = lme(fixed = Reaction ~ 1,  
+               random = ~ 1 | Subject,
+                       data = data_2,
+                   method = 'REML')
+summary(model.01)
+```
+
+```{r}
+VarCorr(model.01)[1]
+```
+
+`r VarCorr(model.01)[1]` is the common variance across the 2 groups attributable to between-persons differences.  This, summed to the residual variance `r VarCorr(model.01)[2]`, gives the total variance. 
+
+By extracting the Variance-Covariance Matrix, we may visualise the total variance on the diagonal, and the common covariance off-diagonal. 
+
+```{r}
+getVarCov(model.01,type="marginal") 
+```
+
+The Variance-Covariance structure is the same for all subjects:
+
+```{r}
+getVarCov(model.01,type="marginal",individuals = 15) 
+```
+
+The variance attributed to subject is a measure of the intraclass correlation and can be converted to a correlation coefficient when divided by the total variance (in this case, ICC = `r as.numeric(VarCorr(model.01)[1])/as.numeric(VarCorr(model.01)[1])+as.numeric(VarCorr(model.01)[2])`)
+
+This kind of variance structure is also termed "compund symmetry". The model assignes this structure by default, however, this can be explicitly specified in the random effect: 
+
+```{r}
+model.02 = lme(fixed = Reaction ~ 1,  
+               random = list(Subject = pdSymm(form = ~ 1)),
+                       data = data_2,
+                   method = 'REML')
+```
+
+This gives exactly the same result with between-subject Variance = `rVarCorr(model.01)[1]`. pdSymm creates a positive-definite Symmetric matrix:
+
+```{r}
+pdSymm(diag(rep(x = 1, times = 3)), nam = c("A","B","C"))
+```
+
+# Variance heterogeneity model in between-subject residuals
+
+We specify a positive-definite diagonal matrix, meaning that variance changes with group between subjects, but it is common within subject (which makes sense since these people are either males or females but not both...) 
+
+```{r}
+model.01b = lme(fixed = Reaction ~ 1,  
+                random = list(Subject = pdDiag(form = ~ factor(G))),
+                        data = data_2,
+                method = 'REML')
+summary(model.01b)
+```
+
+Here we have a differential term of Variance for G = M (the other level is taken as threshold). 
+
+```{r}
+VarCorr(model.01b)
+```
+
+Let's check the Variance-Covariance Matrix of 2 subjects pertaining to different groups; here are subject 308 (F), and 310 (M):
+
+```{r}
+getVarCov(model.01b, type="marginal", individuals = c(1,3)) 
+```
+
+The diagonal total variance and off-diagonal covariance change with G by a factor of `r VarCorr(model.01b)[2]`. 
+
+# Variance heterogeneity model in between- and within-subject residuals
+
+Since this is a longitudinal design, variances may also change within subject. This may happen, for example, when observations that are closer in time are more similar to each other than observations occurring at a later time point. In this case, we capitalise on the between and within subject variability across multiple time points, and we assign a weight depending on the time of observation:
+
+```{r}
+model.01c = lme(fixed = Reaction ~ 1,  
+                random = list(Subject = pdSymm(form = ~ 1)),
+                weights = varIdent(form = ~ 1 | factor(Days)),
+                        data = data_2,
+                    method = 'REML')
+summary(model.01c)
+```
+
+Between-subject variances:
+
+```{r}
+VarCorr(model.01c)
+```
+
+`r VarCorr(model.01c)[1]` is the between-subject variation. However, there is also a variation within the same subject now, on the diagonal:
+
+```{r}
+getVarCov(model.01c, type="marginal", individuals = c(1,3)) 
+```
+
+And within-subject variances by day (a bit difficult to extract...):
+
+```{r}
+wss.v <- function(model) {
+  res.std = summary(model)$sigma #to re-scale the values
+  wts = coef(model$modelStruct$varStruct, unconstrained=FALSE)
+  res.v.g = (res.std*wts)^2
+  res.v = data.frame(res.v.g)
+  colnames(res.v) = "wss"
+  return(res.v)
+}
+
+wss.v(model.01c)
+```
+
+Variances decrease until the 4th day, then increases again (probably related to correlation between observations close in time). 
