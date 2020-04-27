@@ -1,0 +1,134 @@
+---
+title: "Going on with the Multilevel (mixed) Model in R: Contrasts"
+Date: April 24, 2018
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+  word_document: default
+Author: Teresa Del Bianco
+---
+
+# Initialize Session:
+
+```{r, warning=FALSE, message=FALSE}
+data("sleepstudy")
+# install.packages("lmerTest")
+library(lmerTest)
+# library(ggplot2)
+library(knitr)
+opts_template$set(figure_small = list(fig.height = 4, fig.width = 6)) 
+```
+
+```{r}
+kable(head(sleepstudy))
+```
+
+Let's replicate the mixed model with an interaction term that we fitted in the first part of this tutorial: 
+
+```{r}
+# First let's create the additional variable Lunch
+set.seed(88)
+lunch <- sample(c(0,1), replace=TRUE, size=18)
+sleepstudy$lunch <- factor(lunch)
+head(sleepstudy)
+```
+
+We will have 2 variations in our model: first, we will consider Days as a categorical rather than a numerical variable. We do this because we want to be able to answer the question: does lunch affect differently day 1 from day 2/3/4 etc? In other words, is there a difference in a difference between days? Second, we will remove the fixed intercept from the model, by adding a "-1" to the formula. This addition does not change much the result but will make the successive operations a little bit more handy as it provides the complete display of all the factor levels. 
+
+```{r} 
+# Change the data type of Days from number to factor
+sleepstudy$Days <- factor(as.character(sleepstudy$Days), levels = unique(sleepstudy$Days))
+levels(sleepstudy$Days)
+```
+
+```{r}
+# Fit the model
+
+m <- lmer(Reaction 
+           ~ Days * lunch - 1 + 
+             ( 1 | Subject), 
+           data=sleepstudy)
+summary(m)
+```
+
+From the above output, we can see that there are main effects of individual days on reaction, no effect of lunch and various estimates of the interaction between lunch and a particular day. As in the previous tutorial, we should interpret main effects of days as effects without lunch (lunch = 0). In addition to the main effect of lunch, each day will receive an additional coefficient given by the interaction coefficient.
+
+The summary shows also that the interactions are not significant. But if we are interested in the differences between all the days and the first day of the experiment, Day 1? How can we compare all the other days to Day 1 in particular? First, we need to compute all the combinations of the levels of the factor Day and Lunch:
+
+```{r}
+group <- paste0(sleepstudy$Days, sleepstudy$lunch)
+group <- aggregate(model.matrix(m) ~ group, FUN=mean)
+# group
+rownames(group) <- group$group
+(group <- group[,-1])
+```
+
+The first column summarises the interaction between day and lunch: we have Day 0 with lunch 0 and 1, day 1 with lunch 0 and 1... and so on. The other columns contains zeros and ones that represent the specification of the factor combination (day 0 and lunch 0, for example) in the extended model matrix. Now we can specify which comparisons we want to compute. In this case, we want to compare all days with lunch with day 1 with lunch: 
+
+```{r}
+contrasts <- rbind(group["11",] - group["21",],
+      group["11",] - group["31",],
+      group["11",] - group["41",],
+      group["11",] - group["51",],
+      group["11",] - group["61",],
+      group["11",] - group["71",],
+      group["11",] - group["81",],
+      group["11",] - group["91",])
+head(contrasts)
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(multcomp)
+
+# Transform into Matrix
+contrast.matrix <- rbind("Lunch on Day 1 versus Lunch on Day 2"=as.numeric(contrasts[1,]),
+                         "Lunch on Day 1 versus Lunch on Day 3"=as.numeric(contrasts[2,]),
+                         "Lunch on Day 1 versus Lunch on Day 4"=as.numeric(contrasts[3,]),
+                         "Lunch on Day 1 versus Lunch on Day 5"=as.numeric(contrasts[4,]),
+                         "Lunch on Day 1 versus Lunch on Day 6"=as.numeric(contrasts[5,]),
+                         "Lunch on Day 1 versus Lunch on Day 7"=as.numeric(contrasts[6,]),
+                         "Lunch on Day 1 versus Lunch on Day 8"=as.numeric(contrasts[7,]),
+                         "Lunch on Day 1 versus Lunch on Day 9"=as.numeric(contrasts[8,]))
+
+comparisons <- summary(glht(m, contrast.matrix))
+
+comparisons
+```
+
+We can see from this output that, even if the p-values of the interaction effects were not significant, the effect of lunch in different days is different. In this example, The difference in Reaction progressively grows and becomes significantly different from Day 1 starting from Day 5. 
+
+Let's format the results of the contrasts test into a table: 
+
+```{r, warning=FALSE, message=FALSE}
+pq <- comparisons$test
+
+mtests <- data.frame(pq$coefficients, pq$sigma, pq$tstat, pq$pvalues)
+error <- attr(pq$pvalues, "error")
+pname <- switch(comparisons$alternativ, 
+                 less = paste("Pr(<", ifelse(comparisons$df ==0, "z", "t"), ")", 
+                              sep = ""), 
+                 greater = paste("Pr(>", ifelse(comparisons$df == 0, "z", "t"), ")", 
+                                 sep = ""), 
+                 two.sided = paste("Pr(>|", ifelse(comparisons$df == 0, "z", "t"), "|)", 
+                                   sep = ""))                                   
+
+colnames(mtests) <- c("Estimate", "Std.Error", ifelse(comparisons$df ==0, 
+                                                      "zvalue", "tvalue"), pname)
+
+library(dplyr)
+mtests <- mtests %>%
+  add_rownames("Parameters") %>%
+  mutate(`Pr(>|z|)`=ifelse(`Pr(>|z|)`< 0.001, 
+                           "< 0.001", 
+                           ifelse(`Pr(>|z|)` < 0.01, 
+                                  "< 0.01",
+                                  ifelse(`Pr(>|z|)` < 0.05, 
+                                         "< 0.05",
+                                         paste(round(`Pr(>|z|)`,
+                                                     4)))))) %>%
+  mutate_if(is.numeric, funs(round(.,
+                                   digits=2)))
+kable(mtests)
+```
