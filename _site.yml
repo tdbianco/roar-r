@@ -5,8 +5,19 @@ navbar:
   left:
   - text: "Home"
     href: index.html
-  - text: "LMM Essential Tutorial"
-    href: lmm-essential-tutorial.html
+  - text: "Anova Essentials"
+    href: anova.html
+  - text: "LMM"
+    menu:
+      - text: "LMM"
+      - text: "Essential Tutorial"
+        href: lmm-essential-tutorial.html
+      - text: "Customising Contrasts"
+        href: lmm-contrasts-tutorial.html
+      - text: "Comparing OLS and LMM"
+        href: lmm-vs-ols.html
+      - text: "Modelling Heterogeneus Variance"
+        href: lmm-het-var.html
 output:
   html_document:
 theme: cosmo

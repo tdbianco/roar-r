@@ -5,3 +5,14 @@ output: html_document
 
 Ciao!
 
+Who I Am: 
+
+I started my career as a medical doctor and became interested in the way children with atypical development interact with the visual world. During my PhD, I focused on the early manifestations of social attention, gaze-following and face-orienting. I help the coordination and data collection of several multisite studies and work on the implementation of statistical analysis techniques. My focus is on  variability and internal correlations of attention that allow physiological levels of self-organisation. 
+
+I started using R 5 years ago and I am completely self-taught. I am a heavy dplyr and ggplot user, and I love to big my brain into the possibilities of multi-level models. 
+
+Follow me on Twitter! https://twitter.com/teresaDBnco
+
+And check out the work of our lab https://sites.google.com/view/bondcbcd 
+
+
