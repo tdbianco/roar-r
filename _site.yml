@@ -5,7 +5,7 @@ navbar:
   left:
   - text: "Home"
     href: index.html
-  - text: "Speed and Distance"
+  - text: "LMM Essential Tutorial"
     href: lmm-essential-tutorial.html
 output:
   html_document:
