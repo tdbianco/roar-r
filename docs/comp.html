@@ -348,18 +348,18 @@ $(document).ready(function () {
 <div id="linear-regression" class="section level1">
 <h1>Linear regression</h1>
 <p>Sample ds:</p>
-<pre><code>##       X           ID group Stimulus prop_valid    age.y schedule_adj
-## 1  7506 491998749681   ASD  static1  0.9990864 23.72329       Adults
-## 2  7989 317719510819    TD  static2  0.7051389 13.71233  Adolescents
-## 3 10053 653262752197   ASD  static5  0.7147841 13.28767  Adolescents
-## 4 10524 494344414167    TD  static6  0.9686047 20.36986       Adults
-## 5  9905 449830790175   ASD  static5  0.7887874 20.40000       Adults
-##      sex fsiq4_all SRS_tscore  AOI   prop.LT
-## 1   Male 111.00000         74 head 0.4777621
-## 2   Male 111.00000         NA head 0.4854953
-## 3   Male 109.00000         87 head 0.1246805
-## 4   Male 108.03571         NA head 0.1985937
-## 5 Female  81.98971         66 head 0.6727388</code></pre>
+<pre><code>##       X           ID group Stimulus prop_valid    age.y schedule_adj  sex
+## 1  7517 503004924812   ASD  static1  0.9736711 19.90411       Adults Male
+## 2  8198 600269564046    TD  static2  0.7798936 10.06575     Children Male
+## 3 10074 696700648122    TD  static5  0.5942691 14.94521  Adolescents Male
+## 4  9710 156275255538   ASD  static5  0.8282392 23.51507       Adults Male
+## 5 10269 112152703248   ASD  static6  0.9051495 11.49589     Children Male
+##   fsiq4_all SRS_tscore  AOI    prop.LT
+## 1  92.28130         54 head 0.29386676
+## 2  99.00000         41 head 0.29971212
+## 3  61.81818         54 head 0.27533194
+## 4  68.00000         79 head 0.09205776
+## 5  90.00000         83 head 0.70352358</code></pre>
 <div id="ols-with-complete-pooling" class="section level2">
 <h2>OLS with Complete pooling</h2>
 <p>This is a standard regression that does not include individual estimates of beta:</p>
