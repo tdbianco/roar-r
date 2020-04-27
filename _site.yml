@@ -5,8 +5,10 @@ navbar:
   left:
   - text: "Home"
     href: index.html
-  - text: "Anova Essentials"
+  - text: "Anova"
     href: anova.html
+  - text: "LM"
+    href: "lm-assumptions.html"
   - text: "LMM"
     menu:
       - text: "LMM"
@@ -14,8 +16,6 @@ navbar:
         href: lmm-essential-tutorial.html
       - text: "Customising Contrasts"
         href: lmm-contrasts-tutorial.html
-      - text: "Comparing OLS and LMM"
-        href: comp.html
       - text: "Modelling Heterogeneus Variance"
         href: lmm-het-var.html
 output:

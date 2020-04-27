@@ -1,0 +1,219 @@
+---
+title: "Checking the assumption of linear regression"
+---
+# Initialize session
+
+```{r}
+data("ChickWeight")
+summary(ChickWeight)
+attach(ChickWeight)
+```
+
+# Linear Model
+
+```{r}
+lrmod <- lm(weight~Time+Diet)
+summary(lrmod)
+```
+
+## Non-linearity and Heteroscedacity
+
+```{r}
+ChickWeight$res <- resid(lrmod)
+ChickWeight$fit <- fitted(lrmod)
+library(ggplot2)
+theme_set(theme_bw())
+ggplot(data=ChickWeight, aes(x=fit, y=res)) + geom_point(shape=21, size=3, 
+                                                         col="black", fill="gray", 
+                                                         alpha=0.7) + 
+  labs(y="Residuals", x="Fitted Values") + geom_smooth(se = FALSE, col="red") +
+  geom_hline(yintercept = 0, linetype="dotted")
+```
+
+By this plot, we can see 2 things: the relation is likely not linear (curved line of smooth fit) and the assumption of heteroscedacity is not respected, i.e., the variance of the error terms is not constant. This happens when the error terms increase with the increase of the response. For addressing both of this problems, we can attempt a non-linear transformation of x and y. For the heteroscedacity problem, we may choose a "concave" function, such as square root or log. 
+
+```{r}
+lrmodlog <- lm(log(weight)~I(Time^2)+Diet)
+ChickWeight$reslog <- resid(lrmodlog)
+ChickWeight$fitlog <- fitted(lrmodlog)
+ggplot(data=ChickWeight, aes(x=fitlog, y=reslog)) + geom_point(shape=21, size=3, 
+                                                               col="black", fill="gray", 
+                                                               alpha=0.7) + 
+  labs(y="Residuals", x="Fitted Values") + geom_smooth(se = FALSE, col="red") +
+  geom_hline(yintercept = 0, linetype="dotted")
+```
+
+The "funnel" shape typical of heteroscedacity disappeared, though the pattern is not linear yet. Maybe the transformation of x is not appropriate. 
+
+```{r}
+lrmodlog2 <- lm(log(weight)~I(Time^2)+I(Time^3)+Diet)
+ChickWeight$reslog2 <- resid(lrmodlog2)
+ChickWeight$fitlog2 <- fitted(lrmodlog2)
+ggplot(data=ChickWeight, aes(x=fitlog2, y=reslog2)) + geom_point(shape=21, size=3, 
+                                                                 col="black", fill="gray", 
+                                                                 alpha=0.7) + 
+  labs(y="Residuals", x="Fitted Values") + geom_smooth(se = FALSE, col="red") +
+  geom_hline(yintercept = 0, linetype="dotted")
+```
+
+Better. 
+
+```{r}
+lrmodlog3 <- lm(log(weight)~poly(Time,4)+Diet)
+ChickWeight$reslog3 <- resid(lrmodlog3)
+ChickWeight$fitlog3 <- fitted(lrmodlog3)
+ggplot(data=ChickWeight, aes(x=fitlog3, y=reslog3)) + geom_point(shape=21, size=3, 
+                                                                 col="black", fill="gray", 
+                                                                 alpha=0.7) + 
+  labs(y="Residuals", x="Fitted Values") + geom_smooth(se = FALSE, col="red") +
+  geom_hline(yintercept = 0, linetype="dotted")
+```
+
+Transforming time at the second, third and fourth power significantly improve the fit of our model. Let's check it out. 
+
+```{r}
+summary(lrmodlog3)
+```
+
+## Correlation error terms
+
+```{r}
+ggplot(data=ChickWeight, aes(x=Time, y=res, 
+                             group=Chick, fill=Chick, 
+                             col=Chick)) + 
+  geom_point(shape=21, size=3, 
+             col="black", alpha=0.7,
+             position = position_dodge(10)) + 
+  labs(y="Residuals", x="Time") + geom_path(position = position_dodge(10)) +
+  theme(legend.position = "none")
+```
+
+This plot is also showing a problem, that is that there is a time pattern in the error terms. This is not very problematic for the fit, but rather for the estimate of the Ci and the p-values, as it increases the probability of a false positive. Let's check the same plot with the transformed variables:
+
+```{r}
+ggplot(data=ChickWeight, aes(x=Time, y=reslog3, 
+                             group=Chick, fill=Chick, 
+                             col=Chick)) + 
+  geom_point(shape=21, size=3, 
+             col="black", alpha=0.7,
+             position = position_dodge(10)) + 
+  labs(y="Residuals", x="Time") + geom_path(position = position_dodge(10)) +
+  theme(legend.position = "none")
+```
+
+Here we see that the time pattern is less visible for observations that tended to increase over time, while there is still a certain trend for the decreasing values. 
+
+## Outliers
+
+```{r}
+library(MASS)
+ChickWeight$studres <- studres(lrmod)
+ChickWeight$studres3 <- studres(lrmodlog3)
+
+library(ggrepel)
+ggplot(data=ChickWeight, aes(x=fit, y=studres)) + geom_point(shape=21, size=3, 
+                                                             col="black", fill="gray", 
+                                                             alpha=0.7) + 
+  labs(y="Studentized Residuals", x="Fitted Values") +
+  geom_hline(yintercept = 3, linetype="dotted") +
+  geom_label_repel(aes(label = ifelse(studres>3, paste0(Chick, "-", Time), "")),
+                  box.padding   = 0.35, 
+                  point.padding = 0.5,
+                  segment.color = 'grey50')
+```
+
+```{r}
+ggplot(data=ChickWeight, aes(x=fitlog3, y=studres3)) + geom_point(shape=21, size=3, 
+                                                                  col="black", fill="gray", 
+                                                                  alpha=0.7) + 
+  labs(y="Studentized Residuals", x="Fitted Values") +
+  geom_hline(yintercept = 3, linetype="dotted") +
+  geom_label_repel(aes(label = ifelse(studres3>3, paste0(Chick, "-", Time), "")),
+                  box.padding   = 0.35, 
+                  point.padding = 0.5,
+                  segment.color = 'grey50')
+```
+
+We can see here that by transforming we remove the outlier problem. 
+
+## High leverage points
+
+```{r}
+ChickWeight$lev <- hat(model.matrix(lrmodlog3))
+plot(ChickWeight$lev)
+```
+
+We don't see particularly influencial observations in the predictor variables. 
+
+```{r}
+ChickWeight[ChickWeight$lev>0.2,]
+```
+
+## Collinearity
+
+```{r, message=F, warning=F}
+library(car)
+vif(lrmodlog3)
+```
+
+Here I am a little puzzled, as the original model did not have any collinearity. Of course, the 3 transformation of time must be correlated between each other, so this could explain the absurdely high vifs. 
+
+### Correlation
+
+I would normally check the correlation coefficients with cor(), but we have a categorical and numerical predictor here. First, a categorical variable does not increase/decrease, so it does not make muche sense to ask if there is a correlation. Also, the problem of collinearity arises when twob variables are strongly and positively correlated and are harly distinguashable between each other. I think this is not the case. However, we can have a sense of the association by regressing the two and looking at the correlation between the residuals and the observed values:
+
+```{r}
+lrmod2 <- lm(Time~Diet, data=ChickWeight)
+rsq <- summary(lrmod2)$r.squared
+sqrt(rsq)
+```
+
+
+The squared root of R^2 is the measure of correlation between residuals and observed values, and we see this is minimal!
+
+As a conclusion, this model:
+*log(weight) ~ I(Time^2) + I(Time^3) + I(Time^4) + Diet*
+has been demonstrated to be a "good" (relatively best) fit for the ChickWeigh data. 
+
+# Linear Mixed Model
+
+```{r}
+library(lme4)
+lmrmod <- lmer(weight~Time+Diet+(1|Chick))
+summary(lmrmod)
+```
+
+## Non-linearity and Heteroscedacity
+
+```{r}
+ChickWeight$res <- resid(lmrmod)
+ChickWeight$fit <- fitted(lmrmod)
+ggplot(data=ChickWeight, aes(x=fit, y=res)) + geom_point(shape=21, size=3, col="black", fill="gray", alpha=0.7) + 
+  labs(y="Residuals", x="Fitted Values") + geom_smooth(se = FALSE, col="red") +
+  geom_hline(yintercept = 0, linetype="dotted")
+```
+
+Wohooo!! Heteroscedacity respected, but how curved!!
+
+```{r}
+lrmodtr <- lmer(weight~Time+I(Time^2)+Diet+(1|Chick))
+ChickWeight$restr <- resid(lrmodtr)
+ChickWeight$fittr <- fitted(lrmodtr)
+ggplot(data=ChickWeight, aes(x=fittr, y=restr)) + geom_point(shape=21, size=3, col="black", fill="gray", alpha=0.7) + 
+  labs(y="Residuals", x="Fitted Values") + geom_smooth(se = FALSE, col="red") +
+  geom_hline(yintercept = 0, linetype="dotted")
+```
+
+```{r}
+lrmodtr2 <- lmer(weight~Time+poly(Time,4)+Diet+(1|Chick))
+ChickWeight$restr2 <- resid(lrmodtr2)
+ChickWeight$fittr2 <- fitted(lrmodtr2)
+ggplot(data=ChickWeight, aes(x=fittr2, y=restr2)) + geom_point(shape=21, size=3, col="black", fill="gray", alpha=0.7) + 
+  labs(y="Residuals", x="Fitted Values") + geom_smooth(se = FALSE, col="red") +
+  geom_hline(yintercept = 0, linetype="dotted")
+```
+
+If I attempt the mixed model... this is not linear at all!!
+
+
+
