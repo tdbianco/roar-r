@@ -1,0 +1,181 @@
+---
+title: "R Tutorial"
+output: html_notebook
+---
+
+# The R Notebook Format
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+paste("hello!")
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+Enter a new chunk below:
+
+
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+## Other Formats
+
+You can also create a base script, from New > R Script. 
+
+In a script, each line of code is an executable command. When you execute the lines of the code, the output appear in the Console. 
+
+To execute a line of code, place the cursor in it and press *Cmd+Enter* or the *Run* button on the top right of the script panel. To insert comments, type text preceded by *#*.
+
+When you save the R script, it will be saved as a R text file; to visualise the output, you always have to run the script in R. Therefore, I generally prefer to create a notebook - it's easier to share results with others. 
+
+# Basic Code
+
+There are very few coding essentials you need to know to do basic operations with datasets. R comes with lots of packages for data manipulation, and we usually need to do very specific operations, so we really only need to understand how our variables are build and how to access their elements. 
+
+## Assignment and class
+
+Any text entered in a chunk is interpreted as code. Pressing *Cmd+Enter* runs the code. 
+
+```{r}
+3 + 1
+```
+
+To create a named object, assign a value to a specific variable. To assign a value, we draw a "arrow sign" between the variable name and the value. 
+Assign the value 2 to the variable b below the #. 
+Assign the value "hello!" to the variable c below the ##.
+
+```{r}
+a <- 1
+#
+
+##
+
+```
+
+
+The variable will be stored in the Environment. In a new chunck, you can type the variable name in a new line and display its value by running the chunck. You can also access the variable in the Environment Tab to open a preview of the variable.
+
+Enter the variable b below the # and visualise its value.
+Enter the variable c below the ## and visualise its value.
+
+
+```{r}
+#
+
+##
+
+```
+
+A variable can be numerical, character (text), or many other types. 
+
+Check the class of the variables a, b and c.
+
+```{r}
+class(a)
+
+#
+
+##
+
+```
+
+## Variable with more than 1 dimension
+
+Most of the variables we are interested in have many rows and columns (higher dimension objects called datasets). 
+
+A variable constituted by 1 series is defined as a vector. To create a vector, we enter a series of elements in parentheses, separated by commas. The letter "c" - that stands for "concatenate" - must precede the parentheses
+
+```{r}
+d <- c(1, 2, 3)
+d
+```
+
+To constrain the components of the vector in 1 row, we apply the function *cbind* to the series. Each component is assigned to a different column. 
+To access the component assigned to each column, we type the vector followed by square brackets, and enter the corresponding index *after* the comma. 
+
+```{r}
+e <- cbind(4, 5, 6)
+e # preview row vector
+```
+
+```{r}
+paste("The value assigned to the 1st column is:")
+
+e[,1] #access value assigned to column index 1
+```
+
+To constrain the components of the vector in 1 row, we apply the function *rbind* to the series. Each component is assigned to a different column. 
+
+```{r}
+f <- rbind("hello!", "how", "are", "you")
+f #preview
+```
+
+After the #, access the value assigned to the 3rd row. Remember, you have to type the name of the vector (f), followed by square brackets ([ ]), and enter the corresponding index (3) *before* the comma. 
+
+```{r}
+paste("The value assigned to the 3rd row is:")
+#
+
+```
+
+A matrix is an object with 2 dimensions, rows and columns. To create a matrix, we can use cbind and rbind. 
+
+In the chunk below, we bind two variables, x and y, by column with cbind. x and y are two variables formed by a sequence of numbers. x becomes the first column, y become the second column. 
+
+```{r}
+x <- c(1,2,3)
+y <- c(4,5,6)
+cbind(x, y)
+```
+
+To access the elements of the matrix, we need to specify two indexes, before and after the comma, inside the square brackets.
+
+```{r}
+mc <- cbind(x, y)
+mc[3,2] # access the value on the third row and secondo column
+```
+
+Below the #, bind two variables, p and q, by row with rbind. What does p become, and q? 
+
+```{r}
+p <- c("nice", "weather", "today")
+q <- c("lovely", "isn't", "it")
+#
+rbind(p, q)
+```
+
+Create the matrix mr with p and q, and access the value in the first row, second column. Remember, you have to specify two indexes, before and after the comma, inside the square brackets.
+
+```{r}
+  # assign the matrix formed by p and q to the variable mr; remember to use rbind!
+  # access the value on the first row and second column
+```
+
+Bonus question: can you create a variable containing the value in the 2nd row and 3rd column of mr?
+
+```{r}
+  # create a subset of mr 
+```
+
+1 million pounds question: can you access the values of the 2nd row and *1st AND 3rd column* of mr? A small hint: to access two values, you need to concatenate two indexes. 
+
+```{r}
+  # create a 2-elements subset of mr
+```
+
+
+# Import a dataset
+
+You can read a spreadsheet into R from an online or a local path:  
+
+```{r}
+# If you are importing a file from the web, enter the url / if you are importing from local place the cursor in front of the word 'url' and press Cmd+Shift+C to comment
+
+```
+
+

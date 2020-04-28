@@ -5,13 +5,18 @@ navbar:
   left:
   - text: "Home"
     href: index.html
+  - text: "Exploring your data"
+    menu:
+      - text: "Matching Subsamples"
+        href: "propensity-scores.html"
+      - text: "Modelling multi-site data"
+        href: "geo-info.html"
   - text: "Anova"
     href: anova.html
   - text: "LM"
     href: "lm-assumptions.html"
   - text: "LMM"
     menu:
-      - text: "LMM"
       - text: "Essential Tutorial"
         href: lmm-essential-tutorial.html
       - text: "Customising Contrasts"
