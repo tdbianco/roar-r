@@ -20,7 +20,7 @@ The example dataframe lalonde contains data of two treatment groups with demogra
 # install.packages("arm")
 library(arm)
 data(lalonde)
-str(lalonde)
+head(lalonde)
 ```
 
 # Display unmatched data
