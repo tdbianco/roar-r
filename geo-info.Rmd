@@ -17,7 +17,7 @@ Here we present an handy way of assessing bias depending on site, inspired by th
 We are going to attach some invented site and outcome info to the lalonde datasent. The example dataframe lalonde contains data of two treatment groups with demographic information. Site info is represented by a factor with 3 levels (centre 1, centre 2...), while outcome is a continous variable with normal distribution. 
 
 ```{r}
-set.seed(88) #set seed when generating data
+set.seed(7) #set seed when generating data
 library(arm)
 data(lalonde)
 lalonde$site <- factor(sample(x = c(1:3), 
@@ -26,7 +26,7 @@ lalonde$site <- factor(sample(x = c(1:3),
 lalonde$outcome <- rnorm(n = nrow(lalonde), 
                          mean = 0, 
                          sd = 100)
-summary(lalonde)
+head(lalonde)
 ```
 
 We fit a mixed model taking site as a covariante, and allowing random intercept and varying slopes per site (i.e, we obtain individual estimates for each site). 
@@ -104,10 +104,10 @@ g0 +
               linetype="dashed", col="grey") + # add the confidence intervals of the treatment effect
   geom_abline(aes(intercept=ci[1,2], slope=ci[2,2]), 
               linetype="dashed", col="grey") +
-  labs(x="Predicted Estimates", y="Observed Estimates")
+  labs(y="Predicted Estimates", x="Observed Estimates")
 ```
 
-We can see here that estimates of site 2 and 3 are quite in line with the treatment effect, as estimated by the model. The most reliable estimate is from site 2 (lies within the confidence interval), meaning that this model captures what is happening at site 2 quite well. However, the behaviour with site 3 is also not that bad, only slighly above the actual effect. However, the estimate of the treatment effect is a bit more underestimated at site 1. This might be a useful information when considering the generalisation to all the sites of the treatment effect. 
+We can see here that estimates of site 2 and 3 are quite in line with the treatment effect, as estimated by the model. The most reliable estimate is from site 2 (lies within the confidence interval), meaning that this model captures what is happening at site 2 quite well. However, the behaviour with site 3 is also not that bad, but below the actual effect. The estimate of the treatment effect is a bit more overestimated at site 1. This might be a useful information when considering the generalisation to all the sites of the treatment effect. 
 
 # Plot coefficients
 
@@ -126,4 +126,4 @@ plot_coefs(fit,
            inner_ci_level = .90)
 ```
 
-Here we can see that while the effect of education on outcome is positive in all sites, the effect of age is negative in site 2 (even though the CI overlap... probably not a significant difference!). 
+Here we can see that the effect of age is positive in site 1 (even though the CI overlap... probably not a significant difference!). 
