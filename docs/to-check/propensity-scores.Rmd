@@ -1,0 +1,141 @@
+---
+title: "Matching Unbalanced Subsamples"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+This code is inspired by indications found in HilL&Gelman book "Data Analysis Using Regression and Multilevel/Hierarchical Models" https://g.co/kgs/zkuYrJ 
+
+In psychology research, we are often interested in comparing groups on some characteristics of interest. However, the samples may often differ by some other characteristics that may play as a confound when we investigate the sources of the variance. One way of approaching this problem is to improve the matching between the subsample, trying to increase the overlap on certain characteristics. 
+
+With this approach, we calculate propensity scores for each participants and pair them, to exclude participants that do not have a match. 
+
+# Initialise Session and Data
+
+The example dataframe lalonde contains data of two treatment groups with demographic information. 
+
+```{r}
+# install.packages("arm")
+library(arm)
+data(lalonde)
+str(lalonde)
+```
+
+# Display unmatched data
+
+By visualising the data, we can see that there is an imbalance by age; for example, participants below 20 are over-represeted in the control group (treatment = 0). 
+
+```{r}
+library(ggplot2)
+ggplot(data=lalonde, 
+       aes(x=age, 
+           fill=factor(treat))) + 
+  geom_histogram(col="black")
+```
+
+# Compute propensity scores
+
+We estimate the probability of pertaining to the treatment group based on the participants characteristics with a binomial model (fit). We then use a function (arm::matching) to match 1 observation in the treatment==1 arm, with one most similar in the arm with treatment==0. Then we subset the original dataset based on the matched pairs of observations. 
+
+```{r}
+fit <- glm(treat ~ re74 + re75 + age + factor(educ) + 
+            black + hisp + married + nodegr + u74 + u75, 
+           data=lalonde,
+            family=binomial(link="logit"))
+pscores <- predict(fit, type="response")
+matches <- matching(z=lalonde$treat, score=pscores)
+matched <- lalonde[matches$matched,]
+```
+
+Propensity scores calculated from the binomial model (each row corresponds to 1 participant):
+
+```{r}
+head(cbind(pscores))
+```
+
+The propensity score is the probablityof being assigned to treatment==1 based on the participants characteristics. ideally, we want the two groups to be composed by individuals with the same probability of being assigned to both. 
+
+Matches show the indices (position in dataset) of a couple of matched observations, such as:
+
+```{r}
+ind <- matches %>% 
+  tibble::rownames_to_column("index") %>%
+  select(-pairs) %>%
+  filter(matched==matched[1] | matched==index[1])
+ind
+```
+
+These two observations are matched together based on the similarity of the propensity score (`r pscores[ind$matched[1]]` for observation number 197 and `r pscores[ind$index[1]]` for observation number 1).
+
+The matched dataset only includes participants that can be coupled into pairs:
+
+```{r}
+nrow(matched)
+```
+
+We excluded `r nrow(lalonde) - nrow(matched)` participants.
+
+# Compare distribution of propensity scores
+
+Why did we gain from the the exclusion of `r nrow(lalonde) - nrow(matched)` participants? Hopefully, the subsamples overlap better with respect to the confounding variables. Let's check the propensity scores of the matched sample. 
+
+```{r}
+fit.m <- glm(treat ~ re74 + re75 + age + factor(educ) + 
+            black + hisp + married + nodegr + u74 + u75, 
+            data=matched,
+            family=binomial(link="logit"))
+pscores.m <- predict(fit.m, type="response")
+```
+
+```{r}
+library(dplyr)
+lalonde <- lalonde %>%
+  mutate(p.scores=pscores)
+matched <- matched %>%
+  mutate(p.scores=pscores.m)
+#plot the unmatched data
+unm.d <- ggplot(data=lalonde, 
+                aes(x=p.scores, fill=factor(treat))) + 
+  geom_density(col="black", alpha=0.4) + 
+  labs(title="Unmatched Data") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  ylim(0,7)
+#plot the matched data
+m.d <- ggplot(data=matched, 
+              aes(x=p.scores, fill=factor(treat))) + 
+  geom_density(col="black", alpha=0.4) + 
+  labs(title="Matched Data") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  xlim(0,1)
+# plot together
+library(ggpubr)
+ggarrange(unm.d, m.d, common.legend = T, legend = "right")
+```
+
+The unmatched data displayed a partial separation based on propensity scores, meaning that the variables forming the propensity score might have easily confounded the treatment effect. This might happen in situations where participants with specific characteristics might be more easily recruited as a target/control group.  
+
+# Display matched data
+
+We can display the matched data by any of the categorical variables in the dataset, for example age. From the plot, we can see that approximately 50% of each age group is distributed in the treatment and control group for most of the groups. Participants in their 20s are not over-represented anymore in the control group.
+
+```{r}
+ggplot(data=matched, 
+       aes(x=age, fill=factor(treat))) + 
+  geom_histogram(col="black")
+```
+
+# Check balance
+
+We can display the difference in means of the matched/unmatched data. 
+
+```{r}
+b.stats <- balance(lalonde, matched, fit)
+plot(b.stats)
+```
+
+The open circles represent the unmatched data; the closer the estimate to zero, the better. We can see that most difference scores improved, but some got worst, probably due to the exclusion of small categories.
+
+
+
