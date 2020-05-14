@@ -23,6 +23,8 @@ navbar:
         href: lmm-contrasts-tutorial.html
       - text: "Modelling Heterogeneus Variance"
         href: lmm-het-var.html
+      - text: "Reporting of Results"
+        href: result-report.html
 output:
   html_document:
 theme: cosmo
