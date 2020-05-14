@@ -323,6 +323,9 @@ $(document).ready(function () {
     <li>
       <a href="lmm-het-var.html">Modelling Heterogeneus Variance</a>
     </li>
+    <li>
+      <a href="result-report.html">Reporting of Results</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -349,8 +352,15 @@ $(document).ready(function () {
 <h1>Geographic info</h1>
 <p>We are going to attach some invented site and outcome info to the lalonde datasent. The example dataframe lalonde contains data of two treatment groups with demographic information. Site info is represented by a factor with 3 levels (centre 1, centre 2…), while outcome is a continous variable with normal distribution.</p>
 <pre class="r"><code>set.seed(7) #set seed when generating data
-library(arm)
-data(lalonde)
+library(arm)</code></pre>
+<pre><code>## Loading required package: MASS</code></pre>
+<pre><code>## Loading required package: Matrix</code></pre>
+<pre><code>## Loading required package: lme4</code></pre>
+<pre><code>## Warning: package &#39;lme4&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## 
+## arm (Version 1.10-1, built: 2018-4-12)</code></pre>
+<pre><code>## Working directory is /Users/teresa/Documents/R/roar-r</code></pre>
+<pre class="r"><code>data(lalonde)
 lalonde$site &lt;- factor(sample(x = c(1:3), 
                               size = nrow(lalonde), 
                               replace=T))
@@ -374,8 +384,17 @@ head(lalonde)</code></pre>
 ## 6  -21.09494</code></pre>
 <p>We fit a mixed model taking site as a covariante, and allowing random intercept and varying slopes per site (i.e, we obtain individual estimates for each site).</p>
 <pre class="r"><code># install.packages(lmerTest)
-library(lmerTest)
-ml.fit &lt;- lmer(outcome ~ treat + site + (0 + treat | site), data=lalonde)</code></pre>
+library(lmerTest)</code></pre>
+<pre><code>## Warning: package &#39;lmerTest&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## 
+## Attaching package: &#39;lmerTest&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:lme4&#39;:
+## 
+##     lmer</code></pre>
+<pre><code>## The following object is masked from &#39;package:stats&#39;:
+## 
+##     step</code></pre>
+<pre class="r"><code>ml.fit &lt;- lmer(outcome ~ treat + site + (0 + treat | site), data=lalonde)</code></pre>
 <pre><code>## boundary (singular) fit: see ?isSingular</code></pre>
 <pre class="r"><code>fixef(ml.fit)</code></pre>
 <pre><code>## (Intercept)       treat       site2       site3 
@@ -405,8 +424,20 @@ newdat &lt;- data.frame(
     , thi = newdat$outcome+cmult*sqrt(tvar1)
 )</code></pre>
 <p>We summarise the raw data to compare predictions with what happens in real life.</p>
-<pre class="r"><code>library(dplyr)
-m_ci &lt;- lalonde %&gt;% group_by(site, treat) %&gt;%
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:MASS&#39;:
+## 
+##     select</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>m_ci &lt;- lalonde %&gt;% group_by(site, treat) %&gt;%
   summarise(N=n(),
             m=mean(outcome),
             s=sd(outcome),
@@ -451,8 +482,14 @@ g0 +
 <h1>Plot coefficients</h1>
 <p>We may also examine the effect of specific factors depending on the site.</p>
 <pre class="r"><code>fit &lt;- lm(outcome ~ age:site + educ:site, data=lalonde)
-library(jtools)
-plot_coefs(fit, 
+library(jtools)</code></pre>
+<pre><code>## Warning: package &#39;jtools&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## 
+## Attaching package: &#39;jtools&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:arm&#39;:
+## 
+##     standardize</code></pre>
+<pre class="r"><code>plot_coefs(fit, 
            coefs = c(&quot;Age &quot; = &quot;age:site1&quot;, &quot;Education &quot; = &quot;site1:educ&quot;,
                      &quot;Age  &quot; = &quot;age:site2&quot;, &quot;Education  &quot; = &quot;site2:educ&quot;,
                      &quot;Age   &quot; = &quot;age:site3&quot;, &quot;Education   &quot; = &quot;site3:educ&quot;),
