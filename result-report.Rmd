@@ -1,0 +1,452 @@
+---
+title: "Name of Your Project - Analysis and Results Report"
+---
+
+Below are sections to include in a report of a Mixed Model Regression Analysis. The bullet points indicate the values that you should report. I do provide example tables of these values, and only a few, essential examples of the write-up, that's your job to complete! 
+
+**Note that not all the sections may be applicable: it depends from your analysis pipeline!**
+
+**Also, this is a list of parameters that may be sensible to include, but it does not exhaust all possibilities. You are the only fair judge of what is sensible to include/not include in your report. This is a guide made by a user, just like you**.  
+
+Third note: the following models does not make much sense. It is just a demonstration. 
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+```
+
+# List all the loaded packages
+
+```{r, results = "hide"}
+# Load packages 
+packs <- c("reshape2", "dplyr", "ggplot2", "lmerTest", "broom.mixed", "car", "knitr", "stringi", "tidyr", "multcomp")
+lapply(packs, require, character.only = TRUE)
+```
+
+```{r}
+pck <- data.frame(cbind((.packages())))
+names(pck) <- "Loaded Packages"
+kable(pck)
+```
+
+# Import and format data
+
+```{r}
+# Read Data 
+# dat <- read.csv("")
+dat <- mtcars
+```
+
+```{r}
+# Data Formatting
+dat.s <- dat %>%
+  add_rownames("ID") %>%
+  mutate(ID=factor(paste(ID)),
+         group=factor(ifelse(grepl(pattern = "Merc", x = ID), 
+                             "Merc", 
+                             "Other")))
+# Set up exclusion criterium
+dat.f <- dat.s %>% filter(round(wt, 2)>2.5)
+```
+
+# Preliminary Operations
+
+Report any excluded samples/participants. 
+
+```{r}
+# N of excluded samples
+excl_sample <- nrow(dat.s)-nrow(dat.f)
+# Proportion of excluded samples
+prop_excl_samples <- round((nrow(dat.s)-nrow(dat.f))/nrow(dat.s), 2)
+# Participants and relative number of excluded samples:
+excl_trials <- dat.s %>%
+  arrange(ID) %>%
+  group_by(ID, group) %>%
+  summarise(N=n(),
+            N_excl=sum(wt<2.5),
+            Prop.excl=round(N_excl/N, 1)) %>%
+  filter(N_excl>0)
+# Participants dropped after criteria of selection:
+excl <- excl_trials %>% 
+  rename("N of completed trials"=N, "N of excluded trials"=N_excl)
+dropped <- excl %>% nrow()
+```
+
+`r dropped` cars with weight < 2.5 were excluded from the analysis:
+
+```{r}
+kable(excl[,-c(5)])
+```
+
+# Descriptive Statistics
+
+Report essential descriptive statistics. 
+
+```{r}
+#Wide to long format
+dat.l <- melt(dat.f,
+        # ID variables - all the variables to keep but not split apart on
+    id.vars=c("ID", "mpg", "cyl", "disp", "hp", "drat", "wt", "qsec", "gear", "carb", "group"),
+        # The source columns
+    measure.vars=c("vs", "am"),
+        # Name of the destination column that will identify the original
+        # column that the measurement came from
+    variable.name="eng-trasm",
+    value.name="Value"
+)
+```
+
+```{r}
+mercedes <- data.frame(dat.l) %>% #one variable to count (may be males/females...)
+  filter(group=="Merc") %>% 
+  dplyr::select(ID) %>% 
+  unique() 
+mercedes <- mercedes$ID
+
+descr <- dat.l %>%
+  group_by(cyl) %>%
+  summarise(N=length(unique(ID)),
+            N_mercedes=length(which(unique(ID) %in% mercedes)),
+            m.mpg=round(mean(mpg), 2),
+            min.mpg=round(min(mpg), 2),
+            max.mpg=round(max(mpg), 2),
+            m.qsec=round(mean(qsec), 2),
+            s.qsec=round(sd(qsec), 2),
+            iqr.qsec=round(IQR(qsec), 2)) %>%
+  t() %>%
+  data.frame() %>%
+  rename(" "=X1, "  "=X2, " "=X3)
+```
+
+```{r}
+kable(descr, caption = "Table 1: descriptive statistics by cyl")
+```
+
+# Main Analysis
+
+Report: 
+
+* Formula of the model
+
+* Fixed Effects
+
+* Random Effects. Specify varying intercept and/or slope in parentheses.  
+
+* Method to compute p-values
+
+* Software, version and packages used for the analysis - such as: these analysis were carried out with R `r paste0(version$major, ".", version$minor)`. The models were run using lmerTest version `r packageVersion("lmerTest")`; the contrasts were calculated with the package multcomp version `r packageVersion("multcomp")`.  
+
+Describe: 
+
+* Rationale of formula
+
+* Random Structure
+
+## Results
+
+### Model Comparison
+
+If you compared more than one model, report the following results. 
+
+```{r}
+mod_0 <- lmer(qsec ~ mpg + (1|ID), data=dat.l)
+mod_1 <- lmer(qsec ~ mpg + group + (1|ID), data=dat.l)
+mod_2 <- lmer(qsec ~ mpg * group + (1|ID), data=dat.l)
+```
+
+List the models:
+
+```{r}
+mds <- ls(pattern="^mod")
+list_mds <- data.frame(cbind(mds, 
+      formula=c(paste0(formula(mds[1]))[3], 
+        paste0(formula(mds[2]))[3], 
+        paste0(formula(mds[3]))[3])
+     ))
+kable(list_mds)
+```
+
+Report:
+
+* Method (backward elimination, forward selection)
+ 
+* Test 
+ 
+* AIC
+ 
+* BIC
+ 
+* Log Likelihood
+ 
+* Deviance
+ 
+* statistic
+ 
+* Degrees of Freedom
+ 
+* P-Value
+ 
+Comment on:
+
+* AIC
+ 
+* Deviance
+ 
+* P-Values
+ 
+* (DoF)
+
+```{r}
+m.anv <- anova(mod_0,mod_1,mod_2)
+m.anv <- m.anv %>%
+  tidy() %>% 
+  mutate(Sign=ifelse(p.value<0.001, "**", 
+                     ifelse(p.value<0.05, "*",
+                            ifelse(p.value < 0.1, ".", "-")))) %>%
+  mutate_each(funs(round(.,2)), -term, -Sign)
+```
+
+```{r}
+kable(m.anv, caption = "Table 2: model comparison")
+```
+
+### Fixed Effects
+
+Report key findings in the text: 
+
+* Parameter estimates, Standard Errors, Confidence Intervals (and method used to calculate them), Significance tests (Estimate = , SE = , p < )
+
+* Standard deviations and correlations of random effects
+
+Example of description of a model, from *Winter, 2013* (https://arxiv.org/pdf/1308.5499.pdf):
+
+*"We used R (R Core Team, 2012) and lme4 (Bates, Maechler & Bolker, 2012) to perform a linear mixed effects analysis of the relationship between pitch and politeness. As fixed effects, we entered politeness and gender (without interaction term) into the model. As random effects, we had intercepts for subjects and items, as well as by-subject and by-item 21 random slopes for the effect of politeness. Visual inspection of residual plots did not reveal any obvious deviations from homoscedasticity or normality. P-values were obtained by likelihood ratio tests of the full model with the effect in question against the model without the effect in question."*
+
+```{r}
+# confidence intervals
+set.seed(88)
+ci <- confint(mod_2, method="Wald")
+ci <- data.frame(ci[-c(1,2),])
+ci <- ci %>% tibble::rownames_to_column("term")
+```
+
+```{r}
+# estimates
+est <- data.frame(summary(mod_2)$coef)
+est2 <- est %>% 
+  add_rownames("term") %>%
+  inner_join(ci, by="term") %>%
+  rename("p.value"=Pr...t..,
+         "st.error"=Std..Error,
+         "CI_2.5"=X2.5..,
+         "CI_97.5"=X97.5..) %>%
+  mutate(Sign=ifelse(p.value<0.001, "**", 
+                     ifelse(p.value<0.05, "*",
+                            ifelse(p.value < 0.1, ".", "-"))),
+         group=ifelse(grepl(pattern = "Other", x = term), "Other", "Merc")) %>%
+  mutate_each(funs(round(.,2)), -term, -Sign, -group)
+```
+
+```{r}
+kable(est2, caption = "Table 3: estimates of fixed effects and 95% confidence intervals")
+```
+
+For example, you would report the effect of mpg in the text: *"we found no significant main effect of mpg (beta = 0.55, SE = 0.10, CI 95% = 0.36 - 0.74, p-value = 0.99)"*. Same for the other effects and the interaction. 
+
+```{r}
+plt <- ggplot(subset(est2), 
+                    aes(x=term, y=Estimate, fill=group, shape=group, group=term)) + 
+  geom_errorbar(aes(ymin=CI_2.5, ymax=CI_97.5), width=0.1, position = position_dodge(0.5)) +
+  geom_line(position = position_dodge(0.5)) +
+  geom_point(size=2, position = position_dodge(0.5)) + 
+  scale_shape_manual(values = c(21,22)) +
+  scale_fill_manual(values=c("yellow", "blue")) +
+  theme(plot.subtitle = element_text(hjust=0.5), legend.position = "top",
+        axis.text = element_text(size = 14),
+        axis.title = element_text(size = 17),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 17),
+        strip.text.x = element_text(size = 15)) +
+  labs(y="Estimated qsec", x="", subtitle="")
+```
+
+```{r, fig.width=10, fig.height=7}
+plt
+```
+
+### Random Effect
+
+You can report the Variance or Standard Deviation of the Random Effect. 
+
+```{r}
+re.id <- VarCorr(mod_2, digits=2)[1]$`ID` #variance
+
+stdev.residual <- c(round(sigma(mod_2), 2)) #residual std dev
+
+stdev.id <- round(attributes(re.id)$stddev, 2) #std dev
+
+re <- tidy(rbind(stdev.id, stdev.residual))
+colnames(re) <- c("Term", "Intercept")
+```
+
+```{r}
+kable(re, caption = "Table 4: standard deviations of the random effects")
+```
+
+### Group Comparisons
+
+Report key findings in the text (as applicable to your specific analysis): 
+
+* T-test and Anova: 
+
+    + Test statistics
+    
+    + degrees of freedom
+    
+    + significance tests 
+    
+Example: Chi/F/T(df) = ..., p </= ...
+
+* Simultaneous Tests for General Linear hypotheses (contrasts): 
+
+    + Estimate of the test statistics
+    
+    + Standard error
+    
+    + significance test
+    
+Example: Estimate = ..., SE = ..., p < ...
+
+#### Overall difference between groups (Anova)
+
+```{r}
+overall.anv <- Anova(mod_2, contrasts=list(topic=contr.sum, sys=contr.sum), type=3) %>% 
+  tidy() %>%
+  mutate(Sign=ifelse(p.value<0.001, "**", 
+                     ifelse(p.value<0.05, "*",
+                            ifelse(p.value < 0.1, ".", "-")))) %>%
+  rename("Chisq"=statistic) %>%
+  mutate_each(funs(round(.,2)), -term, -Sign)
+```
+
+```{r}
+kable(overall.anv, caption="Table 5 : overall difference between groups")
+```
+
+For example, you would say in the text: *"the analysis of variance of type III revealed a significant difference between the groups (Chisq(1) = 9.49, p-value<0.001), with the group Oter scoring higher than the Merc group (beta= 6.83, SE = 2.22; see Table 3)"*
+
+#### Simultaneous Tests for General Linear hypotheses between groups and age classes (Contrasts)
+
+```{r}
+group <- paste0(dat.l$mpg, dat.l$group)
+group <- aggregate(model.matrix(mod_2) ~ group, FUN=mean)
+rownames(group) <- group$group
+(group <- group[,-1])
+```
+
+Here I run only 1 contrast as an example between cars of group Other with mpg=10/40 and cars of group Merc with mpg=16.4. 
+
+```{r}
+contrasts <- rbind(
+group["10.4Other",] - group["16.4Merc",]
+)
+```
+
+```{r}
+# Transform into Matrix
+contrast.matrix <- rbind("mpg 10-16 Other vs Merc"=as.numeric(contrasts[1,]))
+comparisons <- summary(glht(mod_2, contrast.matrix))
+contrasts <- tidy(comparisons) %>% 
+  rename("term"=lhs) %>%
+  mutate(Sign=ifelse(p.value<0.001, "**", 
+                     ifelse(p.value<0.05, "*",
+                            ifelse(p.value < 0.1, ".", "-")))) %>%
+  mutate_each(funs(round(.,2)), -term, -Sign)
+```
+
+```{r}
+kable(contrasts[,-2], caption="Table 6: linear contrasts by group and age class")
+```
+
+Example write-up: *"the qsec of cars of group Other with mpg=10/40 and cars of group Merc with mpg=16.4 did not significantly differ between each other (Estimate = -1.09, SE = 0.69, p-value = 0.12)"*
+
+### Individual Variation
+
+(Without Example)
+
+Report:
+
+* Model formula
+
+* Method to calculate individual coefficients/individual effect sizes (note, unrelated to model effect size!)
+
+* Effect sizes of key findings
+
+#### Correlations: 
+
+* Method
+
+* Correlation coefficients
+
+### Model Diagnostic
+
+1. Normal Quantile-Quantile (QQ) Plot (normality)
+
+The QQNorm plot shows theoretical and sample data extracted from the observed values (representative of quantiles) and aims to demonstrate that the data fits the normal distribution:
+
+```{r}
+qqnorm(resid(mod_2)) ; qqline(resid(mod_2), col="red")
+```
+
+Another important diagnostic plot is the Residual Plot. Residuals are "the difference between the observed value and the estimated value of the quantity of interest (for example, a sample mean)" (from wikipedia). In the case of a regression, residuals represent the distance between the depedent variable (Reaction) and its estimates worked out by the regression function (the so-called fitted values). 
+Plotting the residuals can demonstrate that various important assumptions are respected:
+
+2. Histogram of the residuals (normality of the residuals)
+
+See the shape, is it normally distributed?
+
+```{r}
+hist(resid(mod_2), main = "Histogram of Residuals (normality)", 
+     xlab = "Residuals", col = "red")
+```
+
+
+3. Residual Plot (homogeneity)
+
+Data points should not be dispersed. We might spot some outliers. 
+
+```{r}
+ggplot(data = dat.l, aes(x = predict(mod_2), y = cbind(resid(mod_2)))) + 
+  geom_point(size = 3, col = "red", alpha = 0.6) +
+  geom_abline(slope = 0,
+              intercept = 0,
+              col = "gray") + 
+  labs(x = "Fitted Values", y = "Residuals", 
+       title = "Residuals vs Fitted", 
+       subtitle = "Homogeneity")
+```
+
+4. Plot of the residuals vs the independent variables (independence)
+
+```{r}
+ggplot(data = dat.l, aes(x = group, y = cbind(resid(mod_2)))) + 
+  geom_jitter(size = 3, col = "red", alpha = 0.5) +
+  labs(y = "Residuals", title = "Residuals vs Group", subtitle = "Independence") 
+```
+
+```{r}
+ggplot(data = dat.l, aes(x = mpg, y = cbind(resid(mod_2)))) + 
+  geom_jitter(size = 3, col = "red", alpha = 0.5) +
+  labs(y = "Residuals", title = "Residuals vs mpg", subtitle = "Independence") 
+```
+
+```{r}
+ggplot(data = dat.l, aes(x = mpg, y = cbind(resid(mod_2)))) + 
+  geom_jitter(size = 3, col = "red", alpha = 0.5) +
+  facet_wrap(~group) +
+  labs(y = "Residuals", title = "Residuals vs group by mpg", subtitle = "Independence") 
+```
+
+# Session Info
+
+These analysis were carried out with R `r paste0(version$major, ".", version$minor)`. The models were run using lmerTest version `r packageVersion("lmerTest")`; the contrasts were calculated with the package multcomp version `r packageVersion("multcomp")`. 
+
