@@ -15,12 +15,12 @@
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 
 <style type="text/css">code{white-space: pre;}</style>
@@ -286,6 +286,9 @@ $(document).ready(function () {
         <li>
   <a href="index.html">Home</a>
 </li>
+<li>
+  <a href="blog.html">Blog</a>
+</li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
     Exploring your data
@@ -344,6 +347,16 @@ $(document).ready(function () {
 
 </div>
 
+<div id="TOC">
+<ul>
+<li><a href="#initialise-session-and-data">Initialise Session and Data</a></li>
+<li><a href="#display-unmatched-data">Display unmatched data</a></li>
+<li><a href="#compute-propensity-scores">Compute propensity scores</a></li>
+<li><a href="#compare-distribution-of-propensity-scores">Compare distribution of propensity scores</a></li>
+<li><a href="#display-matched-data">Display matched data</a></li>
+<li><a href="#check-balance">Check balance</a></li>
+</ul>
+</div>
 
 <p>This code is inspired by indications found in HilL&amp;Gelman book “Data Analysis Using Regression and Multilevel/Hierarchical Models” <a href="https://g.co/kgs/zkuYrJ" class="uri">https://g.co/kgs/zkuYrJ</a></p>
 <p>In psychology research, we are often interested in comparing groups on some characteristics of interest. However, the samples may often differ by some other characteristics that may play as a confound when we investigate the sources of the variance. One way of approaching this problem is to improve the matching between the subsample, trying to increase the overlap on certain characteristics.</p>

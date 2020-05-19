@@ -11,7 +11,7 @@
 
 
 
-<title>README.utf8.md</title>
+<title>Blog Posts</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -343,18 +343,31 @@ $(document).ready(function () {
 
 
 
+<h1 class="title toc-ignore">Blog Posts</h1>
 
 </div>
 
 <div id="TOC">
 <ul>
-<li><a href="#roar-r">roar-r</a></li>
+<li><a href="#mixed-models-uninvited-guest-the-random-effect">19-05-20 ~ Mixed Models’ Uninvited Guest: the Random Effect</a></li>
 </ul>
 </div>
 
-<div id="roar-r" class="section level1">
-<h1>roar-r</h1>
-<p>Coding various statistical techniques in R with a roar Here is the blog! <a href="https://tdbianco.github.io/roar-r/" class="uri">https://tdbianco.github.io/roar-r/</a></p>
+<div id="mixed-models-uninvited-guest-the-random-effect" class="section level1">
+<h1>19-05-20 ~ Mixed Models’ Uninvited Guest: the Random Effect</h1>
+<p>After starting my post-doc at a psychology department, I found that most of my colleagues would refer to “LMMs” with utmost familiarity - while the majority of my colleagues during my biostatistician job would be very confused when I brought mixed models to the conversation. However, while it it happened fairly often that they asked me about the covariance structure of my model, they would show no interest at all when I pronounced “random effect”. In some cases, they would have no clue about what I was talking about. I found out out that it is common practise, at least in the psychology field, to run mixed models “without the need of random effects” (cit.) - and now I was the one to be confused.</p>
+<p>I eventually found out why so many of my oworkers are so deeply convinced that the random effect is optional in a mixed model (maybe a subject for another post), but even more importantly I had to clarify for myself why <strong>the random effect is NOT optional</strong>.</p>
+<p>Mixed models have a bunch of desirable features that makes them quite common in psychology and social sciences. Specifically, mixed models:</p>
+<ol style="list-style-type: decimal">
+<li><p>Allow Correlation Patterns - the user can specify a variance-covariance structure. For example, you may want to specify some kind of correlation between measurements, for example students in a class. A classical example is compound symmetry, where the correlation is equal between all pairs of measurements.</p></li>
+<li><p>Allow missing values without dropping all set of observations from one subject - the game winner, since this is reality of most of the datasets we work with.</p></li>
+<li><p>Allow the uneven spacing of repeated measurements - useful in longitudinal designs. This is also known as auto-regression, when you add a correlation between adjacent measurements that are ordered.</p></li>
+<li><p>Allow a hierachical structure - the great unknown! There are fixed effects (fitting the treatment effects at the population level) and the random effects (fitting the general variability at the subject level).</p></li>
+</ol>
+<p>While points 1-3 are fairly known, point 4 is often the object of misconception (and misspecification). The basic principle is that the random effect allows to estimate a <strong>Variance</strong> parameter that represent how spread out the effects are, at the individual level, around the effect fitted at the group level. Why would be expect the effects to spread out? Because the data structure is nested.</p>
+<p>Nesting is almost like grouping, but it’s hierarchical: a population might be divided into groups (e.g., different countries, origin of participants), and groups might be divided into smaller groups (pictures of butterflies and centipedes, rated by partipants). Each smaller group will have their own average and variance, contributing to the general variance. Therefore, we can model how “spread out” the effects are.</p>
+<p>So is the random effect the same as a fixed effect? Nope. Leaving out a fixed effect inflates the residual (unexplained) variance, due to idiosyncratic error - alert for false negatives. <strong>Leaving out a random effect inflates the main effect with the pooled variance</strong> - alert for false positives! So don’t leave it out!</p>
+<p>A great explanation of random effects and nesting: “Nested by design: model fitting and interpretation in a mixed model era”, Schielzeth &amp; Nakagawa, 2012, <a href="https://doi.org/10.1111/j.2041-210x.2012.00251.x" class="uri">https://doi.org/10.1111/j.2041-210x.2012.00251.x</a></p>
 </div>
 
 

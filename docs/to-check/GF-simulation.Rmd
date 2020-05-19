@@ -1,15 +1,22 @@
 ---
 title: "Gaze-following Simulation"
-author: "Teresa Del Bianco"
-date: "08/05/2020"
-output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
+```{r, include = FALSE}
+# Load packages
+packs <- c("knitr", "dplyr", "ggplot2", "lmerTest", "merTools", "broom.mixed", "car", "knitr", "reshape2")
+lapply(packs, require, character.only = TRUE)
+```
+
+Gaze-following is the behavioural response of following another person's gaze with yours. It is commonly coded as 0/1 (x follow the gaze of y, no or yes). Therefore, I am going to use a binomial model to investigate the occurrance of gaze-following in two experimental conditions. 
+
 # Create dataset
+
+Create a simulation dataset with a binomial variable representing gaze-following, demographics (age and sex) and information about the experiment (a continous variable face indicating the duration of a look on the face before gaze-following, trial number, time to first fixation to the right/left target, experimental condition long vs short, and side of the target right/left). 
 
 ```{r}
 set.seed(88)
@@ -29,17 +36,17 @@ temp = cbind(id,age,sex,trial,face,R,L,cond,target)
 ds = rbind(ds, temp)
 }
 
-head(ds)
+kable(head(ds), caption = "Table 1: Simulation dataset")
 ```
 ```{r}
 library(dplyr)
 ds <- data.frame(ds) %>%
-  mutate_each(funs(as.numeric(as.character(.))), -sex, -cond, -target) %>%
+  mutate_each(funs(as.numeric(as.character(.))), -sex, -cond, -target) %>% # format
   filter(face>0) %>%
-  mutate_each(funs(replace(., . < 0, 0)), -sex, -cond, -target) %>%
+  mutate_each(funs(replace(., . < 0, 0)), -sex, -cond, -target) %>% # remove negative values (missing) with zero
   mutate(GF=factor(ifelse(target == "R" & R < L, "1",
                    ifelse(target == "L" & L < R, "1",
-                   "0"))))
+                   "0")))) # detect GF: when time to first fixation is faster towards the side of the target
 head(ds)
 ```
 ```{r}

@@ -5,9 +5,13 @@ output: html_document
 
 Ciao!
 
+My personal syllogism: I have got a problem, I need answers, I start to learn a method, I get more questions, I mess up, I have a brief eureka moment, and I start again with a problem. Below are brief reports of this process without the yelling.
+
 Who I Am: 
 
-I started my career as a medical doctor and became interested in the way children with atypical development interact with the visual world. During my PhD, I focused on the early manifestations of social attention, gaze-following and face-orienting. I help the coordination and data collection of several multisite studies and work on the implementation of statistical analysis techniques. My focus is on  variability and internal correlations of attention that allow physiological levels of self-organisation. 
+Starting with the name: Dr Teresa Del Bianco (frequently mispelled as Bel Dianco). And yes I am a Dr!
+
+I actually started my career as a medical doctor and became interested in the way children with atypical development interact with the visual world. During my PhD, I focused on the early manifestations of social attention, gaze-following and face-orienting. I am now working as a postdoc at the Centre of Brain and Cognitive Development at the Birkbeck University of London. I help the coordination and data collection of several multisite studies and work on the implementation of statistical analysis techniques. My focus is on  variability and internal correlations of attention that allow physiological levels of self-organisation. 
 
 I started using R 5 years ago and I am completely self-taught. I am a heavy dplyr and ggplot user, and I love to dig my brain into the possibilities of multi-level models. 
 
@@ -15,4 +19,4 @@ Follow me on Twitter! https://twitter.com/teresaDBnco
 
 And check out the work of our lab https://sites.google.com/view/bondcbcd 
 
-
+Public Repository (for sharing my test and trial discoveries): https://github.com/tdbianco/roar-r 

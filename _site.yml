@@ -5,6 +5,8 @@ navbar:
   left:
   - text: "Home"
     href: index.html
+  - text: "Blog"
+    href: blog.html
   - text: "Exploring your data"
     menu:
       - text: "Matching Subsamples"
@@ -27,4 +29,7 @@ navbar:
         href: result-report.html
 output:
   html_document:
-theme: cosmo
+    theme: cosmo
+    highlight: textmate
+    toc: true
+  
