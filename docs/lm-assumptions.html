@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -83,7 +83,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -232,6 +231,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -243,18 +243,6 @@ $(document).ready(function () {
   display: none;
 }
 </style>
-
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
 
 <!-- code folding -->
 
@@ -307,8 +295,17 @@ $(document).ready(function () {
 <li>
   <a href="anova.html">Anova</a>
 </li>
-<li>
-  <a href="lm-assumptions.html">LM</a>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lm-assumptions.html">Assumptions</a>
+    </li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -328,6 +325,18 @@ $(document).ready(function () {
     </li>
     <li>
       <a href="result-report.html">Reporting of Results</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    ML
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="ml_ts.html">Supervised Learning with Time Series for Beginners</a>
     </li>
   </ul>
 </li>
@@ -369,30 +378,23 @@ $(document).ready(function () {
 <h1>Initialize session</h1>
 <pre class="r"><code>data(&quot;ChickWeight&quot;)
 summary(ChickWeight)</code></pre>
-<pre><code>##      weight           Time           Chick     Diet   
-##  Min.   : 35.0   Min.   : 0.00   13     : 12   1:220  
-##  1st Qu.: 63.0   1st Qu.: 4.00   9      : 12   2:120  
-##  Median :103.0   Median :10.00   20     : 12   3:120  
-##  Mean   :121.8   Mean   :10.72   10     : 12   4:118  
-##  3rd Qu.:163.8   3rd Qu.:16.00   17     : 12          
-##  Max.   :373.0   Max.   :21.00   19     : 12          
-##                                  (Other):506</code></pre>
+<pre><code>##      weight           Time           Chick    
+##  Min.   : 35.0   Min.   : 0.00   13     : 12  
+##  1st Qu.: 63.0   1st Qu.: 4.00   9      : 12  
+##  Median :103.0   Median :10.00   20     : 12  
+##  Mean   :121.8   Mean   :10.72   10     : 12  
+##  3rd Qu.:163.8   3rd Qu.:16.00   17     : 12  
+##  Max.   :373.0   Max.   :21.00   19     : 12  
+##                                  (Other):506  
+##  Diet   
+##  1:220  
+##  2:120  
+##  3:120  
+##  4:118  
+##         
+##         
+## </code></pre>
 <pre class="r"><code>attach(ChickWeight)</code></pre>
-<pre><code>## The following objects are masked from ChickWeight (pos = 3):
-## 
-##     Chick, Diet, Time, weight</code></pre>
-<pre><code>## The following objects are masked from ChickWeight (pos = 4):
-## 
-##     Chick, Diet, Time, weight</code></pre>
-<pre><code>## The following objects are masked from ChickWeight (pos = 5):
-## 
-##     Chick, Diet, Time, weight</code></pre>
-<pre><code>## The following objects are masked from ChickWeight (pos = 6):
-## 
-##     Chick, Diet, Time, weight</code></pre>
-<pre><code>## The following objects are masked from ChickWeight (pos = 23):
-## 
-##     Chick, Diet, Time, weight</code></pre>
 </div>
 <div id="linear-model" class="section level1">
 <h1>Linear Model</h1>
@@ -407,14 +409,21 @@ summary(lrmod)</code></pre>
 ## -136.851  -17.151   -2.595   15.033  141.816 
 ## 
 ## Coefficients:
-##             Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  10.9244     3.3607   3.251  0.00122 ** 
-## Time          8.7505     0.2218  39.451  &lt; 2e-16 ***
-## Diet2        16.1661     4.0858   3.957 8.56e-05 ***
-## Diet3        36.4994     4.0858   8.933  &lt; 2e-16 ***
-## Diet4        30.2335     4.1075   7.361 6.39e-13 ***
+##             Estimate Std. Error t value
+## (Intercept)  10.9244     3.3607   3.251
+## Time          8.7505     0.2218  39.451
+## Diet2        16.1661     4.0858   3.957
+## Diet3        36.4994     4.0858   8.933
+## Diet4        30.2335     4.1075   7.361
+##             Pr(&gt;|t|)    
+## (Intercept)  0.00122 ** 
+## Time         &lt; 2e-16 ***
+## Diet2       8.56e-05 ***
+## Diet3        &lt; 2e-16 ***
+## Diet4       6.39e-13 ***
 ## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Residual standard error: 35.99 on 573 degrees of freedom
 ## Multiple R-squared:  0.7453, Adjusted R-squared:  0.7435 
@@ -430,7 +439,6 @@ ggplot(data=ChickWeight, aes(x=fit, y=res)) + geom_point(shape=21, size=3,
                                                          alpha=0.7) + 
   labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
   geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
-<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
 <p><img src="lm-assumptions_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 <p>By this plot, we can see 2 things: the relation is likely not linear (curved line of smooth fit) and the assumption of heteroscedacity is not respected, i.e., the variance of the error terms is not constant. This happens when the error terms increase with the increase of the response. For addressing both of this problems, we can attempt a non-linear transformation of x and y. For the heteroscedacity problem, we may choose a “concave” function, such as square root or log.</p>
 <pre class="r"><code>lrmodlog &lt;- lm(log(weight)~I(Time^2)+Diet)
@@ -441,7 +449,6 @@ ggplot(data=ChickWeight, aes(x=fitlog, y=reslog)) + geom_point(shape=21, size=3,
                                                                alpha=0.7) + 
   labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
   geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
-<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
 <p><img src="lm-assumptions_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <p>The “funnel” shape typical of heteroscedacity disappeared, though the pattern is not linear yet. Maybe the transformation of x is not appropriate.</p>
 <pre class="r"><code>lrmodlog2 &lt;- lm(log(weight)~I(Time^2)+I(Time^3)+Diet)
@@ -452,7 +459,6 @@ ggplot(data=ChickWeight, aes(x=fitlog2, y=reslog2)) + geom_point(shape=21, size=
                                                                  alpha=0.7) + 
   labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
   geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
-<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
 <p><img src="lm-assumptions_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <p>Better.</p>
 <pre class="r"><code>lrmodlog3 &lt;- lm(log(weight)~poly(Time,4)+Diet)
@@ -463,7 +469,6 @@ ggplot(data=ChickWeight, aes(x=fitlog3, y=reslog3)) + geom_point(shape=21, size=
                                                                  alpha=0.7) + 
   labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
   geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
-<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
 <p><img src="lm-assumptions_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>Transforming time at the second, third and fourth power significantly improve the fit of our model. Let’s check it out.</p>
 <pre class="r"><code>summary(lrmodlog3)</code></pre>
@@ -476,17 +481,27 @@ ggplot(data=ChickWeight, aes(x=fitlog3, y=reslog3)) + geom_point(shape=21, size=
 ## -1.0218 -0.1042  0.0104  0.1249  0.5703 
 ## 
 ## Coefficients:
-##                Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)     4.50907    0.01480 304.747  &lt; 2e-16 ***
-## poly(Time, 4)1 12.58899    0.21950  57.353  &lt; 2e-16 ***
-## poly(Time, 4)2 -1.52536    0.21942  -6.952 9.90e-12 ***
-## poly(Time, 4)3 -0.17045    0.21941  -0.777    0.438    
-## poly(Time, 4)4  0.16276    0.21941   0.742    0.459    
-## Diet2           0.11999    0.02491   4.818 1.87e-06 ***
-## Diet3           0.24751    0.02491   9.937  &lt; 2e-16 ***
-## Diet4           0.24583    0.02504   9.818  &lt; 2e-16 ***
+##                Estimate Std. Error t value
+## (Intercept)     4.50907    0.01480 304.747
+## poly(Time, 4)1 12.58899    0.21950  57.353
+## poly(Time, 4)2 -1.52536    0.21942  -6.952
+## poly(Time, 4)3 -0.17045    0.21941  -0.777
+## poly(Time, 4)4  0.16276    0.21941   0.742
+## Diet2           0.11999    0.02491   4.818
+## Diet3           0.24751    0.02491   9.937
+## Diet4           0.24583    0.02504   9.818
+##                Pr(&gt;|t|)    
+## (Intercept)     &lt; 2e-16 ***
+## poly(Time, 4)1  &lt; 2e-16 ***
+## poly(Time, 4)2 9.90e-12 ***
+## poly(Time, 4)3    0.438    
+## poly(Time, 4)4    0.459    
+## Diet2          1.87e-06 ***
+## Diet3           &lt; 2e-16 ***
+## Diet4           &lt; 2e-16 ***
 ## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Residual standard error: 0.2194 on 570 degrees of freedom
 ## Multiple R-squared:  0.8606, Adjusted R-squared:  0.8588 
@@ -502,9 +517,6 @@ ggplot(data=ChickWeight, aes(x=fitlog3, y=reslog3)) + geom_point(shape=21, size=
              position = position_dodge(10)) + 
   labs(y=&quot;Residuals&quot;, x=&quot;Time&quot;) + geom_path(position = position_dodge(10)) +
   theme(legend.position = &quot;none&quot;)</code></pre>
-<pre><code>## Warning: position_dodge requires non-overlapping x intervals
-
-## Warning: position_dodge requires non-overlapping x intervals</code></pre>
 <p><img src="lm-assumptions_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>This plot is also showing a problem, that is that there is a time pattern in the error terms. This is not very problematic for the fit, but rather for the estimate of the Ci and the p-values, as it increases the probability of a false positive. Let’s check the same plot with the transformed variables:</p>
 <pre class="r"><code>ggplot(data=ChickWeight, aes(x=Time, y=reslog3, 
@@ -515,9 +527,6 @@ ggplot(data=ChickWeight, aes(x=fitlog3, y=reslog3)) + geom_point(shape=21, size=
              position = position_dodge(10)) + 
   labs(y=&quot;Residuals&quot;, x=&quot;Time&quot;) + geom_path(position = position_dodge(10)) +
   theme(legend.position = &quot;none&quot;)</code></pre>
-<pre><code>## Warning: position_dodge requires non-overlapping x intervals
-
-## Warning: position_dodge requires non-overlapping x intervals</code></pre>
 <p><img src="lm-assumptions_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>Here we see that the time pattern is less visible for observations that tended to increase over time, while there is still a certain trend for the decreasing values.</p>
 </div>
@@ -558,9 +567,10 @@ plot(ChickWeight$lev)</code></pre>
 <p>We don’t see particularly influencial observations in the predictor variables.</p>
 <pre class="r"><code>ChickWeight[ChickWeight$lev&gt;0.2,]</code></pre>
 <pre><code>## Grouped Data: weight ~ Time | Chick
-##  [1] weight   Time     Chick    Diet     res      fit      reslog  
-##  [8] fitlog   reslog2  fitlog2  reslog3  fitlog3  studres  studres3
-## [15] lev     
+##  [1] weight   Time     Chick    Diet    
+##  [5] res      fit      reslog   fitlog  
+##  [9] reslog2  fitlog2  reslog3  fitlog3 
+## [13] studres  studres3 lev     
 ## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
 </div>
 <div id="collinearity" class="section level2">
@@ -588,8 +598,8 @@ sqrt(rsq)</code></pre>
 <pre class="r"><code>library(lme4)
 lmrmod &lt;- lmer(weight~Time+Diet+(1|Chick))
 summary(lmrmod)</code></pre>
-<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
-## lmerModLmerTest]
+<pre><code>## Linear mixed model fit by REML. t-tests use
+##   Satterthwaite&#39;s method [lmerModLmerTest]
 ## Formula: weight ~ Time + Diet + (1 | Chick)
 ## 
 ## REML criterion at convergence: 5584
@@ -605,14 +615,21 @@ summary(lmrmod)</code></pre>
 ## Number of obs: 578, groups:  Chick, 50
 ## 
 ## Fixed effects:
-##             Estimate Std. Error       df t value Pr(&gt;|t|)    
-## (Intercept)  11.2438     5.7887  57.9038   1.942 0.056960 .  
-## Time          8.7172     0.1755 531.4437  49.684  &lt; 2e-16 ***
-## Diet2        16.2100     9.4643  46.2232   1.713 0.093461 .  
-## Diet3        36.5433     9.4643  46.2232   3.861 0.000349 ***
-## Diet4        30.0129     9.4708  46.3486   3.169 0.002709 ** 
+##             Estimate Std. Error       df
+## (Intercept)  11.2438     5.7887  57.9038
+## Time          8.7172     0.1755 531.4437
+## Diet2        16.2100     9.4643  46.2232
+## Diet3        36.5433     9.4643  46.2232
+## Diet4        30.0129     9.4708  46.3486
+##             t value Pr(&gt;|t|)    
+## (Intercept)   1.942 0.056960 .  
+## Time         49.684  &lt; 2e-16 ***
+## Diet2         1.713 0.093461 .  
+## Diet3         3.861 0.000349 ***
+## Diet4         3.169 0.002709 ** 
 ## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Correlation of Fixed Effects:
 ##       (Intr) Time   Diet2  Diet3 
@@ -627,7 +644,6 @@ ChickWeight$fit &lt;- fitted(lmrmod)
 ggplot(data=ChickWeight, aes(x=fit, y=res)) + geom_point(shape=21, size=3, col=&quot;black&quot;, fill=&quot;gray&quot;, alpha=0.7) + 
   labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
   geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
-<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
 <p><img src="lm-assumptions_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
 <p>Wohooo!! Heteroscedacity respected, but how curved!!</p>
 <pre class="r"><code>lrmodtr &lt;- lmer(weight~Time+I(Time^2)+Diet+(1|Chick))
@@ -636,16 +652,13 @@ ChickWeight$fittr &lt;- fitted(lrmodtr)
 ggplot(data=ChickWeight, aes(x=fittr, y=restr)) + geom_point(shape=21, size=3, col=&quot;black&quot;, fill=&quot;gray&quot;, alpha=0.7) + 
   labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
   geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
-<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
 <p><img src="lm-assumptions_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
-<pre class="r"><code>lrmodtr2 &lt;- lmer(weight~Time+poly(Time,4)+Diet+(1|Chick))</code></pre>
-<pre><code>## fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</code></pre>
-<pre class="r"><code>ChickWeight$restr2 &lt;- resid(lrmodtr2)
+<pre class="r"><code>lrmodtr2 &lt;- lmer(weight~Time+poly(Time,4)+Diet+(1|Chick))
+ChickWeight$restr2 &lt;- resid(lrmodtr2)
 ChickWeight$fittr2 &lt;- fitted(lrmodtr2)
 ggplot(data=ChickWeight, aes(x=fittr2, y=restr2)) + geom_point(shape=21, size=3, col=&quot;black&quot;, fill=&quot;gray&quot;, alpha=0.7) + 
   labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
   geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
-<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
 <p><img src="lm-assumptions_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
 <p>If I attempt the mixed model… this is not linear at all!!</p>
 </div>
@@ -668,6 +681,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

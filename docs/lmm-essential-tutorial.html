@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -83,7 +83,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -232,6 +231,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -243,18 +243,6 @@ $(document).ready(function () {
   display: none;
 }
 </style>
-
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
 
 <!-- code folding -->
 
@@ -307,8 +295,17 @@ $(document).ready(function () {
 <li>
   <a href="anova.html">Anova</a>
 </li>
-<li>
-  <a href="lm-assumptions.html">LM</a>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lm-assumptions.html">Assumptions</a>
+    </li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -328,6 +325,18 @@ $(document).ready(function () {
     </li>
     <li>
       <a href="result-report.html">Reporting of Results</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    ML
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="ml_ts.html">Supervised Learning with Time Series for Beginners</a>
     </li>
   </ul>
 </li>
@@ -454,8 +463,8 @@ grid.arrange(box, g_tab2, ncol=2, nrow=1)</code></pre>
            data=sleepstudy)</code></pre>
 <p>We fitted the model! We can visualize the results with the function summary:</p>
 <pre class="r"><code>summary(m1)</code></pre>
-<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
-## lmerModLmerTest]
+<pre><code>## Linear mixed model fit by REML. t-tests use
+##   Satterthwaite&#39;s method [lmerModLmerTest]
 ## Formula: Reaction ~ Days + (1 + Days | Subject)
 ##    Data: sleepstudy
 ## 
@@ -463,21 +472,25 @@ grid.arrange(box, g_tab2, ncol=2, nrow=1)</code></pre>
 ## 
 ## Scaled residuals: 
 ##     Min      1Q  Median      3Q     Max 
-## -3.9536 -0.4634  0.0231  0.4633  5.1793 
+## -3.9536 -0.4634  0.0231  0.4634  5.1793 
 ## 
 ## Random effects:
 ##  Groups   Name        Variance Std.Dev. Corr
-##  Subject  (Intercept) 611.90   24.737       
-##           Days         35.08    5.923   0.07
+##  Subject  (Intercept) 612.10   24.741       
+##           Days         35.07    5.922   0.07
 ##  Residual             654.94   25.592       
 ## Number of obs: 180, groups:  Subject, 18
 ## 
 ## Fixed effects:
-##             Estimate Std. Error      df t value Pr(&gt;|t|)    
-## (Intercept)  251.405      6.824  17.005  36.843  &lt; 2e-16 ***
-## Days          10.467      1.546  16.995   6.771 3.27e-06 ***
+##             Estimate Std. Error      df t value
+## (Intercept)  251.405      6.825  17.000  36.838
+## Days          10.467      1.546  17.000   6.771
+##             Pr(&gt;|t|)    
+## (Intercept)  &lt; 2e-16 ***
+## Days        3.26e-06 ***
 ## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Correlation of Fixed Effects:
 ##      (Intr)
@@ -508,8 +521,8 @@ grid.arrange(box, g_tab2, ncol=2, nrow=1)</code></pre>
 </ol>
 <pre class="r"><code>VarCorr(m1, comp=c(&quot;Variance&quot;,&quot;Std.Dev.&quot;), digits=2)</code></pre>
 <pre><code>##  Groups   Name        Std.Dev. Corr 
-##  Subject  (Intercept) 24.7366       
-##           Days         5.9229  0.066
+##  Subject  (Intercept) 24.7407       
+##           Days         5.9221  0.066
 ##  Residual             25.5918</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>Fixed effects:</li>
@@ -523,24 +536,24 @@ grid.arrange(box, g_tab2, ncol=2, nrow=1)</code></pre>
 <pre class="r"><code>coef(m1)</code></pre>
 <pre><code>## $Subject
 ##     (Intercept)       Days
-## 308    253.6626 19.6665597
-## 309    211.0108  1.8467699
-## 310    212.4488  5.0177063
-## 330    275.0940  5.6531411
-## 331    273.6636  7.3976093
-## 332    260.4439 10.1952325
-## 333    268.2441 10.2438881
-## 334    244.1731 11.5417935
-## 335    251.0724 -0.2851939
-## 337    286.2916 19.0963068
-## 349    226.1971 11.6403856
-## 350    238.3357 17.0815045
-## 351    255.9828  7.4520035
-## 352    272.2666 14.0036922
-## 369    254.6802 11.3395736
-## 370    225.7940 15.2895377
-## 371    252.2122  9.4791130
-## 372    263.7185 11.7515240
+## 308    253.6637 19.6662617
+## 309    211.0064  1.8476053
+## 310    212.4447  5.0184295
+## 330    275.0957  5.6529356
+## 331    273.6654  7.3973743
+## 332    260.4447 10.1951090
+## 333    268.2456 10.2436499
+## 334    244.1725 11.5418676
+## 335    251.0714 -0.2848792
+## 337    286.2956 19.0955511
+## 349    226.1949 11.6407181
+## 350    238.3351 17.0815038
+## 351    255.9830  7.4520239
+## 352    272.2688 14.0032871
+## 369    254.6806 11.3395008
+## 370    225.7921 15.2897709
+## 371    252.2122  9.4791297
+## 372    263.7197 11.7513080
 ## 
 ## attr(,&quot;class&quot;)
 ## [1] &quot;coef.mer&quot;</code></pre>
@@ -553,24 +566,24 @@ grid.arrange(box, g_tab2, ncol=2, nrow=1)</code></pre>
 <pre class="r"><code>ranef(m1)</code></pre>
 <pre><code>## $Subject
 ##     (Intercept)        Days
-## 308   2.2575329   9.1992737
-## 309 -40.3942719  -8.6205161
-## 310 -38.9563542  -5.4495796
-## 330  23.6888704  -4.8141448
-## 331  22.2585409  -3.0696766
-## 332   9.0387625  -0.2720535
-## 333  16.8389833  -0.2233978
-## 334  -7.2320462   1.0745075
-## 335  -0.3326901 -10.7524799
-## 337  34.8865253   8.6290208
-## 349 -25.2080191   1.1730997
-## 350 -13.0694180   6.6142185
-## 351   4.5777099  -3.0152825
-## 352  20.8614523   3.5364062
-## 369   3.2750882   0.8722876
-## 370 -25.6110745   4.8222518
-## 371   0.8070591  -0.9881730
-## 372  12.3133491   1.2842380
+## 308   2.2585509   9.1989758
+## 309 -40.3987381  -8.6196806
+## 310 -38.9604090  -5.4488565
+## 330  23.6906196  -4.8143503
+## 331  22.2603126  -3.0699116
+## 332   9.0395679  -0.2721770
+## 333  16.8405086  -0.2236361
+## 334  -7.2326151   1.0745816
+## 335  -0.3336684 -10.7521652
+## 337  34.8904868   8.6282652
+## 349 -25.2102286   1.1734322
+## 350 -13.0700342   6.6142178
+## 351   4.5778642  -3.0152621
+## 352  20.8636782   3.5360011
+## 369   3.2754656   0.8722149
+## 370 -25.6129993   4.8224850
+## 371   0.8070461  -0.9881562
+## 372  12.3145921   1.2840221
 ## 
 ## with conditional variances for &quot;Subject&quot;</code></pre>
 <p>The average estimate coefficient is equal to each individual coefficient estimate minus its relative error. For example:</p>
@@ -580,7 +593,7 @@ coef(m1)$Subject[1,2] - ranef(m1)$Subject[1,2]</code></pre>
 <pre class="r"><code>#Second Subject:
 coef(m1)$Subject[2,2] - ranef(m1)$Subject[2,2]</code></pre>
 <pre><code>## [1] 10.46729</code></pre>
-<p>But what do all this coefficients mean? As we introduced previously, the coefficients are estimates of the value of Reaction. Given the estimate coefficient and the random error, we can calculate an estimated value of Reaction for each subject and each day. Each subject has a final Reaction of &quot;Intercept + Slope*x&quot;, where x are the original values of the fixed predictor - 1 to 9 Days in the example. For example, on Day 1, for subject 308 we have:</p>
+<p>But what do all this coefficients mean? As we introduced previously, the coefficients are estimates of the value of Reaction. Given the estimate coefficient and the random error, we can calculate an estimated value of Reaction for each subject and each day. Each subject has a final Reaction of "Intercept + Slope*x", where x are the original values of the fixed predictor - 1 to 9 Days in the example. For example, on Day 1, for subject 308 we have:</p>
 <pre class="r"><code>253.6637 + 19.6662580*1</code></pre>
 <pre><code>## [1] 273.33</code></pre>
 <p>A final reaction of 273.2 ms. It is slightly different from the average estimate Reaction, calculated with the same formula but with the average intercept and slope:</p>
@@ -613,13 +626,13 @@ kable(ci[5:6,])</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">242.445532</td>
-<td align="right">259.90903</td>
+<td align="right">242.44412</td>
+<td align="right">259.9099</td>
 </tr>
 <tr class="even">
 <td align="left">Days</td>
-<td align="right">8.701508</td>
-<td align="right">12.82127</td>
+<td align="right">8.70156</td>
+<td align="right">12.8210</td>
 </tr>
 </tbody>
 </table>
@@ -680,32 +693,39 @@ head(sleepstudy)</code></pre>
              ( 1 + Days | Subject), 
            data=sleepstudy)
 summary(m2)</code></pre>
-<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
-## lmerModLmerTest]
-## Formula: Reaction ~ Days * lunch + (1 + Days | Subject)
+<pre><code>## Linear mixed model fit by REML. t-tests use
+##   Satterthwaite&#39;s method [lmerModLmerTest]
+## Formula: 
+## Reaction ~ Days * lunch + (1 + Days | Subject)
 ##    Data: sleepstudy
 ## 
 ## REML criterion at convergence: 1735.3
 ## 
 ## Scaled residuals: 
 ##     Min      1Q  Median      3Q     Max 
-## -3.9252 -0.4668  0.0292  0.4606  5.1734 
+## -3.9252 -0.4668  0.0292  0.4607  5.1733 
 ## 
 ## Random effects:
 ##  Groups   Name        Variance Std.Dev. Corr
 ##  Subject  (Intercept) 633.2    25.163       
 ##           Days         35.2     5.933   0.07
-##  Residual             658.0    25.651       
+##  Residual             658.0    25.652       
 ## Number of obs: 180, groups:  Subject, 18
 ## 
 ## Fixed effects:
-##             Estimate Std. Error      df t value Pr(&gt;|t|)    
-## (Intercept)  248.112      8.236  31.222  30.127  &lt; 2e-16 ***
-## Days          11.234      1.770  27.783   6.349 7.46e-07 ***
-## lunch1         5.928      8.054 159.466   0.736    0.463    
-## Days:lunch1   -1.380      1.541 157.663  -0.896    0.372    
+##             Estimate Std. Error      df t value
+## (Intercept)  248.112      8.236  31.223  30.127
+## Days          11.234      1.769  27.785   6.349
+## lunch1         5.928      8.054 159.466   0.736
+## Days:lunch1   -1.380      1.541 157.663  -0.896
+##             Pr(&gt;|t|)    
+## (Intercept)  &lt; 2e-16 ***
+## Days        7.45e-07 ***
+## lunch1         0.463    
+## Days:lunch1    0.372    
 ## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Correlation of Fixed Effects:
 ##             (Intr) Days   lunch1
@@ -765,16 +785,13 @@ summary(m2)</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>Independence: finally, plotting the residuals vs the independent variables</li>
 </ol>
-<pre class="ropts"><code>ggplot(data = sleepstudy, aes(x = Days, y = cbind(resid(m1)))) + 
-  geom_jitter(size = 3, col = &quot;red&quot;, alpha = 0.5) +
-  labs(y = &quot;Residuals&quot;, title = &quot;Residuals vs Days&quot;, subtitle = &quot;Independence&quot;) + 
-  scale_x_continuous(breaks = c(0,2,4,6,8))</code></pre>
+<p><code>{ropts.label = "figure_small"} ggplot(data = sleepstudy, aes(x = Days, y = cbind(resid(m1)))) +    geom_jitter(size = 3, col = "red", alpha = 0.5) +   labs(y = "Residuals", title = "Residuals vs Days", subtitle = "Independence") +    scale_x_continuous(breaks = c(0,2,4,6,8))</code></p>
 <pre class="r"><code>ggplot(data = sleepstudy, aes(x = lunch, y = cbind(resid(m1)))) + 
   geom_boxplot(fill = &quot;red&quot;, alpha = 0.5) +
   labs(y = &quot;Residuals&quot;, 
        title = &quot;Residuals vs Lunch&quot;, 
        subtitle = &quot;Independence&quot;) </code></pre>
-<p><img src="lmm-essential-tutorial_files/figure-html/unnamed-chunk-32-1.png" width="576" /></p>
+<p><img src="lmm-essential-tutorial_files/figure-html/unnamed-chunk-31-1.png" width="576" /></p>
 </div>
 
 
@@ -794,6 +811,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

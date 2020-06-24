@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -83,7 +83,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -232,6 +231,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -243,18 +243,6 @@ $(document).ready(function () {
   display: none;
 }
 </style>
-
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
 
 <!-- code folding -->
 
@@ -307,8 +295,17 @@ $(document).ready(function () {
 <li>
   <a href="anova.html">Anova</a>
 </li>
-<li>
-  <a href="lm-assumptions.html">LM</a>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lm-assumptions.html">Assumptions</a>
+    </li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -328,6 +325,18 @@ $(document).ready(function () {
     </li>
     <li>
       <a href="result-report.html">Reporting of Results</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    ML
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="ml_ts.html">Supervised Learning with Time Series for Beginners</a>
     </li>
   </ul>
 </li>
@@ -426,7 +435,8 @@ s.aov</code></pre>
 ## treatment    2    712   356.1   2.851 0.0753 .
 ## Residuals   27   3372   124.9                 
 ## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <p>Means per group (that we calculated manually before), and coefficients of the treatment effect (unstandardised effect size), with standard error:</p>
 <pre class="r"><code>model.tables(aov, &quot;mean&quot;, se=TRUE) #means</code></pre>
 <pre><code>## Tables of means
@@ -554,11 +564,12 @@ summ.tidy.rr.res&lt;-subset(summ.tidy.rr, term==&quot;Residuals&quot;, select = 
 <p>Here are the statistics of the effects. We have three estimates, just as before, 2 for the effects of group and test, and their reciprocal interaction. The “stratum” indicates the grouping - in this case overall and repeated within subject. First, the between-subject factor is listed (group), and then the within-subject factors (test and its interaction):</p>
 <pre class="r"><code>summ.tidy.rr.eff</code></pre>
 <pre><code>## # A tibble: 3 x 7
-##   stratum term            df  sumsq meansq statistic p.value
-##   &lt;chr&gt;   &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
-## 1 subjr   groupr           1   4.06   4.06    0.0862  0.771 
-## 2 Within  testr            1  12.7   12.7     0.469   0.499 
-## 3 Within  groupr:testr     1 145.   145.      5.36    0.0281</code></pre>
+##   stratum term     df  sumsq meansq statistic
+##   &lt;chr&gt;   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;
+## 1 subjr   grou…     1   4.06   4.06    0.0862
+## 2 Within  testr     1  12.7   12.7     0.469 
+## 3 Within  grou…     1 145.   145.      5.36  
+## # … with 1 more variable: p.value &lt;dbl&gt;</code></pre>
 <p>In fact, we have two residual errors this time, the between and the within subject errors:</p>
 <pre class="r"><code>summ.tidy.rr.res</code></pre>
 <pre><code>## # A tibble: 2 x 5
@@ -594,6 +605,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

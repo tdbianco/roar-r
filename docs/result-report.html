@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -83,7 +83,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -232,6 +231,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -243,18 +243,6 @@ $(document).ready(function () {
   display: none;
 }
 </style>
-
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
 
 <!-- code folding -->
 
@@ -307,8 +295,17 @@ $(document).ready(function () {
 <li>
   <a href="anova.html">Anova</a>
 </li>
-<li>
-  <a href="lm-assumptions.html">LM</a>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lm-assumptions.html">Assumptions</a>
+    </li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -328,6 +325,18 @@ $(document).ready(function () {
     </li>
     <li>
       <a href="result-report.html">Reporting of Results</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    ML
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="ml_ts.html">Supervised Learning with Time Series for Beginners</a>
     </li>
   </ul>
 </li>
@@ -404,6 +413,18 @@ kable(pck)</code></pre>
 </tr>
 <tr class="even">
 <td align="left">magrittr</td>
+</tr>
+<tr class="odd">
+<td align="left">Hmisc</td>
+</tr>
+<tr class="even">
+<td align="left">Formula</td>
+</tr>
+<tr class="odd">
+<td align="left">caret</td>
+</tr>
+<tr class="even">
+<td align="left">lattice</td>
 </tr>
 <tr class="odd">
 <td align="left">nlme</td>
@@ -615,61 +636,69 @@ descr &lt;- dat.l %&gt;%
             iqr.qsec=round(IQR(qsec), 2)) %&gt;%
   t() %&gt;%
   data.frame() %&gt;%
-  rename(&quot; &quot;=X1, &quot;  &quot;=X2, &quot; &quot;=X3)</code></pre>
+  rename(&quot;_&quot;=X1, &quot;__&quot;=X2, &quot;___&quot;=X3)</code></pre>
 <pre class="r"><code>kable(descr, caption = &quot;Table 1: descriptive statistics by cyl&quot;)</code></pre>
 <table>
 <caption>Table 1: descriptive statistics by cyl</caption>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">_</th>
+<th align="right">__</th>
+<th align="right">___</th>
+</tr>
+</thead>
 <tbody>
 <tr class="odd">
-<td align="left">cyl</td>
+<td>cyl</td>
 <td align="right">4.00</td>
 <td align="right">6.00</td>
 <td align="right">8.00</td>
 </tr>
 <tr class="even">
-<td align="left">N</td>
+<td>N</td>
 <td align="right">3.00</td>
 <td align="right">7.00</td>
 <td align="right">14.00</td>
 </tr>
 <tr class="odd">
-<td align="left">N_mercedes</td>
+<td>N_mercedes</td>
 <td align="right">2.00</td>
 <td align="right">2.00</td>
 <td align="right">3.00</td>
 </tr>
 <tr class="even">
-<td align="left">m.mpg</td>
+<td>m.mpg</td>
 <td align="right">22.87</td>
 <td align="right">19.74</td>
 <td align="right">15.10</td>
 </tr>
 <tr class="odd">
-<td align="left">min.mpg</td>
+<td>min.mpg</td>
 <td align="right">21.40</td>
 <td align="right">17.80</td>
 <td align="right">10.40</td>
 </tr>
 <tr class="even">
-<td align="left">max.mpg</td>
+<td>max.mpg</td>
 <td align="right">24.40</td>
 <td align="right">21.40</td>
 <td align="right">19.20</td>
 </tr>
 <tr class="odd">
-<td align="left">m.qsec</td>
+<td>m.qsec</td>
 <td align="right">20.50</td>
 <td align="right">17.98</td>
 <td align="right">16.77</td>
 </tr>
 <tr class="even">
-<td align="left">s.qsec</td>
+<td>s.qsec</td>
 <td align="right">1.96</td>
 <td align="right">1.64</td>
 <td align="right">1.17</td>
 </tr>
 <tr class="odd">
-<td align="left">iqr.qsec</td>
+<td>iqr.qsec</td>
 <td align="right">3.22</td>
 <td align="right">2.70</td>
 <td align="right">1.76</td>
@@ -685,7 +714,7 @@ descr &lt;- dat.l %&gt;%
 <li><p>Fixed Effects</p></li>
 <li><p>Random Effects. Specify varying intercept and/or slope in parentheses.</p></li>
 <li><p>Method to compute p-values</p></li>
-<li><p>Software, version and packages used for the analysis - such as: these analysis were carried out with R 3.5.1. The models were run using lmerTest version 3.1.0; the contrasts were calculated with the package multcomp version 1.4.8.</p></li>
+<li><p>Software, version and packages used for the analysis - such as: these analysis were carried out with R 3.5.1. The models were run using lmerTest version 3.1.2; the contrasts were calculated with the package multcomp version 1.4.8.</p></li>
 </ul>
 <p>Describe:</p>
 <ul>
@@ -778,13 +807,13 @@ m.anv &lt;- m.anv %&gt;%
 <thead>
 <tr class="header">
 <th align="left">term</th>
-<th align="right">df</th>
+<th align="right">npar</th>
 <th align="right">AIC</th>
 <th align="right">BIC</th>
 <th align="right">logLik</th>
 <th align="right">deviance</th>
 <th align="right">statistic</th>
-<th align="right">Chi.Df</th>
+<th align="right">df</th>
 <th align="right">p.value</th>
 <th align="left">Sign</th>
 </tr>
@@ -1056,28 +1085,50 @@ colnames(re) &lt;- c(&quot;Term&quot;, &quot;Intercept&quot;)</code></pre>
 group &lt;- aggregate(model.matrix(mod_2) ~ group, FUN=mean)
 rownames(group) &lt;- group$group
 (group &lt;- group[,-1])</code></pre>
-<pre><code>##           (Intercept)  mpg groupOther mpg:groupOther
-## 10.4Other           1 10.4          1           10.4
-## 13.3Other           1 13.3          1           13.3
-## 14.3Other           1 14.3          1           14.3
-## 14.7Other           1 14.7          1           14.7
-## 15.2Merc            1 15.2          0            0.0
-## 15.2Other           1 15.2          1           15.2
-## 15.5Other           1 15.5          1           15.5
-## 15.8Other           1 15.8          1           15.8
-## 15Other             1 15.0          1           15.0
-## 16.4Merc            1 16.4          0            0.0
-## 17.3Merc            1 17.3          0            0.0
-## 17.8Merc            1 17.8          0            0.0
-## 18.1Other           1 18.1          1           18.1
-## 18.7Other           1 18.7          1           18.7
-## 19.2Merc            1 19.2          0            0.0
-## 19.2Other           1 19.2          1           19.2
-## 19.7Other           1 19.7          1           19.7
-## 21.4Other           1 21.4          1           21.4
-## 21Other             1 21.0          1           21.0
-## 22.8Merc            1 22.8          0            0.0
-## 24.4Merc            1 24.4          0            0.0</code></pre>
+<pre><code>##           (Intercept)  mpg groupOther
+## 10.4Other           1 10.4          1
+## 13.3Other           1 13.3          1
+## 14.3Other           1 14.3          1
+## 14.7Other           1 14.7          1
+## 15.2Merc            1 15.2          0
+## 15.2Other           1 15.2          1
+## 15.5Other           1 15.5          1
+## 15.8Other           1 15.8          1
+## 15Other             1 15.0          1
+## 16.4Merc            1 16.4          0
+## 17.3Merc            1 17.3          0
+## 17.8Merc            1 17.8          0
+## 18.1Other           1 18.1          1
+## 18.7Other           1 18.7          1
+## 19.2Merc            1 19.2          0
+## 19.2Other           1 19.2          1
+## 19.7Other           1 19.7          1
+## 21.4Other           1 21.4          1
+## 21Other             1 21.0          1
+## 22.8Merc            1 22.8          0
+## 24.4Merc            1 24.4          0
+##           mpg:groupOther
+## 10.4Other           10.4
+## 13.3Other           13.3
+## 14.3Other           14.3
+## 14.7Other           14.7
+## 15.2Merc             0.0
+## 15.2Other           15.2
+## 15.5Other           15.5
+## 15.8Other           15.8
+## 15Other             15.0
+## 16.4Merc             0.0
+## 17.3Merc             0.0
+## 17.8Merc             0.0
+## 18.1Other           18.1
+## 18.7Other           18.7
+## 19.2Merc             0.0
+## 19.2Other           19.2
+## 19.7Other           19.7
+## 21.4Other           21.4
+## 21Other             21.0
+## 22.8Merc             0.0
+## 24.4Merc             0.0</code></pre>
 <p>Here I run only 1 contrast as an example between cars of group Other with mpg=10/40 and cars of group Merc with mpg=16.4.</p>
 <pre class="r"><code>contrasts &lt;- rbind(
 group[&quot;10.4Other&quot;,] - group[&quot;16.4Merc&quot;,]
@@ -1185,7 +1236,7 @@ contrasts &lt;- tidy(comparisons) %&gt;%
 </div>
 <div id="session-info" class="section level1">
 <h1>Session Info</h1>
-<p>These analysis were carried out with R 3.5.1. The models were run using lmerTest version 3.1.0; the contrasts were calculated with the package multcomp version 1.4.8.</p>
+<p>These analysis were carried out with R 3.5.1. The models were run using lmerTest version 3.1.2; the contrasts were calculated with the package multcomp version 1.4.8.</p>
 </div>
 
 
@@ -1205,6 +1256,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

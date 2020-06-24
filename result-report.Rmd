@@ -114,7 +114,7 @@ descr <- dat.l %>%
             iqr.qsec=round(IQR(qsec), 2)) %>%
   t() %>%
   data.frame() %>%
-  rename(" "=X1, "  "=X2, " "=X3)
+  rename("_"=X1, "__"=X2, "___"=X3)
 ```
 
 ```{r}
