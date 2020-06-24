@@ -295,8 +295,17 @@ $(document).ready(function () {
 <li>
   <a href="anova.html">Anova</a>
 </li>
-<li>
-  <a href="lm-assumptions.html">LM</a>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lm-assumptions.html">Assumptions</a>
+    </li>
+  </ul>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -326,9 +335,8 @@ $(document).ready(function () {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">ML</li>
     <li>
-      <a href="ml_ts.html"></a>
+      <a href="ml_ts.html">Supervised Learning with Time Series for Beginners</a>
     </li>
   </ul>
 </li>
@@ -350,7 +358,8 @@ $(document).ready(function () {
 
 <div id="TOC">
 <ul>
-<li><a href="#introduction">Introduction</a><ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#supervised-learning">Supervised Learning</a><ul>
 <li><a href="#feature-engineering">Feature Engineering</a></li>
 <li><a href="#create-train-and-test-set">Create train and test set</a></li>
 <li><a href="#build-a-baseline-model">Build a Baseline Model</a></li>
@@ -372,7 +381,11 @@ $(document).ready(function () {
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>The following code applies to the ChickWeight Dataset, were we have a recording of each chick’s weight for a number of consecutive weeks (Time). Also, the chicks had 4 types of diet, recorded as a categorical variable. Our official aim is to apply a reliable method to predict the weight gain in new chicks in future studies. The unofficial (real) aim is to start understanding how feature selection and model training work.</p>
-<p>Note: I adapted this script from the (considerably more complex) articles: <a href="https://towardsdatascience.com/time-series-machine-learning-regression-framework-9ea33929009a" class="uri">https://towardsdatascience.com/time-series-machine-learning-regression-framework-9ea33929009a</a> <a href="https://hugobowne.github.io/machine-learning-r/03-Supervised-Learning-I/index.html" class="uri">https://hugobowne.github.io/machine-learning-r/03-Supervised-Learning-I/index.html</a></p>
+<p>Note: I adapted this script from the (considerably more complex) articles:</p>
+<ul>
+<li><p><a href="https://towardsdatascience.com/time-series-machine-learning-regression-framework-9ea33929009a" class="uri">https://towardsdatascience.com/time-series-machine-learning-regression-framework-9ea33929009a</a></p></li>
+<li><p><a href="https://hugobowne.github.io/machine-learning-r/03-Supervised-Learning-I/index.html" class="uri">https://hugobowne.github.io/machine-learning-r/03-Supervised-Learning-I/index.html</a></p></li>
+</ul>
 <pre class="r"><code>data(&quot;ChickWeight&quot;)
 summary(ChickWeight)</code></pre>
 <pre><code>##      weight           Time           Chick    
@@ -399,7 +412,10 @@ ChickWeight %&gt;%
   facet_wrap(~Diet) +
   labs(subtitle = &quot;Diet&quot;,
        caption = &quot;Each line is an individual chick.&quot;)</code></pre>
-<p><img src="ml_ts_files/figure-html/unnamed-chunk-2-1.png" width="672" /> # Supervised Learning</p>
+<p><img src="ml_ts_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="supervised-learning" class="section level1">
+<h1>Supervised Learning</h1>
 <div id="feature-engineering" class="section level2">
 <h2>Feature Engineering</h2>
 <p>One way of improving prediction is provide features to describe the time-series. For example, we can add a “lag” variable corresponding to the weight 1 week previously. We can add more than 1 lag (weight 2 weeks before, 3 weeks before…). Let’s start with 1 lag.</p>
@@ -483,11 +499,11 @@ bas_error</code></pre>
 ## 8     9   18 163.29    0.85
 ## 9    10   20 184.20    0.87
 ## 10   11   21 193.64    0.88</code></pre>
-<p>Total error for baseline model:</p>
+<p>Total error for the model:</p>
 <pre class="r"><code>rmse_bas &lt;- mean(bas_error$Error)
 rmse_bas</code></pre>
 <pre><code>## [1] 105.577</code></pre>
-<p>Total normalised error for baseline model:</p>
+<p>Total normalised error for the model:</p>
 <pre class="r"><code>rmse_bas_n &lt;- mean(bas_error$Error)/mean(train_pred$weight)
 rmse_bas_n</code></pre>
 <pre><code>## [1] 0.8115589</code></pre>
@@ -530,9 +546,9 @@ exp_error</code></pre>
 ## 8     9   18 27.74    0.14
 ## 9    10   20 34.75    0.16
 ## 10   11   21 24.38    0.11</code></pre>
-<p>Total error for baseline model:</p>
+<p>Total error for the model:</p>
 <pre class="r"><code>rmse_expx &lt;- mean(exp_error$Error)</code></pre>
-<p>Total normalised error for exponential model:</p>
+<p>Total normalised error for the model:</p>
 <pre class="r"><code>rmse_expx_N &lt;- mean(exp_error$Error)/mean(train_pred$weight)</code></pre>
 <div id="addind-more-features" class="section level3">
 <h3>Addind more features</h3>
@@ -575,9 +591,9 @@ exp_error</code></pre>
 ## 8     9   18 23.606029 0.12294807
 ## 9    10   20 31.744234 0.15028381
 ## 10   11   21 25.411135 0.11603258</code></pre>
-<p>Total error for baseline model:</p>
+<p>Total error for the model:</p>
 <pre class="r"><code>rmse_expxx &lt;- mean(exp_error$Error, na.rm = TRUE)</code></pre>
-<p>Total normalised error for exponential model:</p>
+<p>Total normalised error for the model:</p>
 <pre class="r"><code>rmse_expxx_N &lt;- mean(exp_error$Error, na.rm = TRUE)/mean(trainx$weight)</code></pre>
 </div>
 <div id="adding-more-features2" class="section level3">
@@ -621,9 +637,9 @@ exp_error</code></pre>
 ## 8     9   18 17.485834 0.09107205
 ## 9    10   20 25.393040 0.12021593
 ## 10   11   21 26.096050 0.11916004</code></pre>
-<p>Total error for baseline model:</p>
+<p>Total error for the model:</p>
 <pre class="r"><code>rmse_expxxx &lt;- mean(exp_error$Error, na.rm = TRUE)</code></pre>
-<p>Total normalised error for exponential model:</p>
+<p>Total normalised error for the model:</p>
 <pre class="r"><code>rmse_expxxx_N &lt;- mean(exp_error$Error, na.rm = TRUE)/mean(trainx$weight)</code></pre>
 </div>
 </div>
@@ -731,9 +747,9 @@ exp_error</code></pre>
 ## 8     9   18 16.84    0.09
 ## 9    10   20 31.79    0.16
 ## 10   11   21 32.11    0.15</code></pre>
-<p>Total error for baseline model:</p>
+<p>Total error for the model:</p>
 <pre class="r"><code>rmse_expx_p_test &lt;- mean(exp_error$Error, na.rm = TRUE)</code></pre>
-<p>Total normalised error for exponential model:</p>
+<p>Total normalised error for the model:</p>
 <pre class="r"><code>rmse_expx_p_N_test &lt;- rmse_expx_p_test/mean(trainx$weight)</code></pre>
 <div id="compare-2" class="section level2">
 <h2>Compare</h2>

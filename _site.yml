@@ -16,7 +16,9 @@ navbar:
   - text: "Anova"
     href: anova.html
   - text: "LM"
-    href: "lm-assumptions.html"
+    menu: 
+      - text: "Assumptions"    
+        href: "lm-assumptions.html"
   - text: "LMM"
     menu:
       - text: "Essential Tutorial"
@@ -29,8 +31,8 @@ navbar:
         href: result-report.html
   - text: "ML"
     menu:
-      - text: "ML"
-      - href: ml_ts.html
+      - text: "Supervised Learning with Time Series for Beginners"
+        href: ml_ts.html
 output:
   html_document:
     theme: cosmo

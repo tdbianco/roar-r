@@ -10,8 +10,11 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 The following code applies to the ChickWeight Dataset, were we have a recording of each chick's weight for a number of consecutive weeks (Time). Also, the chicks had 4 types of diet, recorded as a categorical variable. Our official aim is to apply a reliable method to predict the weight gain in new chicks in future studies. The unofficial (real) aim is to start understanding how feature selection and model training work. 
 
-Note: I adapted this script from the (considerably more complex) articles: https://towardsdatascience.com/time-series-machine-learning-regression-framework-9ea33929009a 
-https://hugobowne.github.io/machine-learning-r/03-Supervised-Learning-I/index.html
+Note: I adapted this script from the (considerably more complex) articles:
+
+- https://towardsdatascience.com/time-series-machine-learning-regression-framework-9ea33929009a 
+
+- https://hugobowne.github.io/machine-learning-r/03-Supervised-Learning-I/index.html
 
 ```{r}
 data("ChickWeight")
@@ -28,6 +31,7 @@ ChickWeight %>%
   labs(subtitle = "Diet",
        caption = "Each line is an individual chick.")
 ```
+
 # Supervised Learning
 
 ## Feature Engineering
@@ -94,14 +98,14 @@ for (i in 2:length(t)) {
 }
 bas_error
 ```
-Total error for baseline model:
+Total error for the model:
 
 ```{r}
 rmse_bas <- mean(bas_error$Error)
 rmse_bas
 ```
 
-Total normalised error for baseline model:
+Total normalised error for the model:
 
 ```{r}
 rmse_bas_n <- mean(bas_error$Error)/mean(train_pred$weight)
@@ -152,13 +156,13 @@ for (i in 2:length(t)) {
 }
 exp_error
 ```
-Total error for baseline model:
+Total error for the model:
 
 ```{r}
 rmse_expx <- mean(exp_error$Error)
 ```
 
-Total normalised error for exponential model:
+Total normalised error for the model:
 
 ```{r}
 rmse_expx_N <- mean(exp_error$Error)/mean(train_pred$weight)
@@ -210,13 +214,13 @@ for (i in 2:length(t)) {
 exp_error
 ```
 
-Total error for baseline model:
+Total error for the model:
 
 ```{r}
 rmse_expxx <- mean(exp_error$Error, na.rm = TRUE)
 ```
 
-Total normalised error for exponential model:
+Total normalised error for the model:
 
 ```{r}
 rmse_expxx_N <- mean(exp_error$Error, na.rm = TRUE)/mean(trainx$weight)
@@ -267,13 +271,13 @@ for (i in 2:length(t)) {
 exp_error
 ```
 
-Total error for baseline model:
+Total error for the model:
 
 ```{r}
 rmse_expxxx <- mean(exp_error$Error, na.rm = TRUE)
 ```
 
-Total normalised error for exponential model:
+Total normalised error for the model:
 
 ```{r}
 rmse_expxxx_N <- mean(exp_error$Error, na.rm = TRUE)/mean(trainx$weight)
@@ -391,13 +395,13 @@ for (i in 2:length(t)) {
 }
 exp_error
 ```
-Total error for baseline model:
+Total error for the model:
 
 ```{r}
 rmse_expx_p_test <- mean(exp_error$Error, na.rm = TRUE)
 ```
 
-Total normalised error for exponential model:
+Total normalised error for the model:
 
 ```{r}
 rmse_expx_p_N_test <- rmse_expx_p_test/mean(trainx$weight)
