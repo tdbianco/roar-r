@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -83,7 +83,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -232,6 +231,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -243,18 +243,6 @@ $(document).ready(function () {
   display: none;
 }
 </style>
-
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
 
 <!-- code folding -->
 
@@ -328,6 +316,19 @@ $(document).ready(function () {
     </li>
     <li>
       <a href="result-report.html">Reporting of Results</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    ML
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">ML</li>
+    <li>
+      <a href="ml_ts.html"></a>
     </li>
   </ul>
 </li>
@@ -475,28 +476,40 @@ ggarrange(unm.d, m.d, common.legend = T, legend = &quot;right&quot;)</code></pre
 plot(b.stats)</code></pre>
 <p><img src="propensity-scores_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <pre><code>## $raw
-##           re74           re75            age  factor(educ)4  factor(educ)5 
-##   -0.002159921    0.083863254    0.107277121   -0.087705802    0.158623414 
-##  factor(educ)6  factor(educ)7  factor(educ)8  factor(educ)9 factor(educ)10 
-##    0.078298987   -0.098299879   -0.118377488    0.057923710   -0.006921703 
-## factor(educ)11 factor(educ)12 factor(educ)13 factor(educ)14 factor(educ)15 
-##   -0.256078933   -0.072042948    0.190980849    0.138025647    0.148068395 
-## factor(educ)16          black           hisp        married         nodegr 
-##    0.103975049    0.103975049    0.043886611   -0.174561071    0.093640701 
-##            u74            u75 
-##   -0.303986439   -0.094140477 
+##           re74           re75            age 
+##   -0.002159921    0.083863254    0.107277121 
+##  factor(educ)4  factor(educ)5  factor(educ)6 
+##   -0.087705802    0.158623414    0.078298987 
+##  factor(educ)7  factor(educ)8  factor(educ)9 
+##   -0.098299879   -0.118377488    0.057923710 
+## factor(educ)10 factor(educ)11 factor(educ)12 
+##   -0.006921703   -0.256078933   -0.072042948 
+## factor(educ)13 factor(educ)14 factor(educ)15 
+##    0.190980849    0.138025647    0.148068395 
+## factor(educ)16          black           hisp 
+##    0.103975049    0.103975049    0.043886611 
+##        married         nodegr            u74 
+##   -0.174561071    0.093640701   -0.303986439 
+##            u75 
+##   -0.094140477 
 ## 
 ## $matched
-##           re74           re75            age  factor(educ)4  factor(educ)5 
-##     0.06621614     0.03835607     0.13615155     0.36978662     0.04823636 
-##  factor(educ)6  factor(educ)7  factor(educ)8  factor(educ)9 factor(educ)10 
-##     0.00000000     0.05324577    -0.03971374    -0.11366162     0.01499702 
-## factor(educ)11 factor(educ)12 factor(educ)13 factor(educ)14 factor(educ)15 
-##    -0.14431246     0.04961898     0.04280605     0.09321213     0.04139547 
-## factor(educ)16          black           hisp        married         nodegr 
-##     0.10397505    -0.31192515     0.00000000     0.13694015    -0.17185823 
-##            u74            u75 
-##    -0.03896622    -0.04858863</code></pre>
+##           re74           re75            age 
+##     0.06621614     0.03835607     0.13615155 
+##  factor(educ)4  factor(educ)5  factor(educ)6 
+##     0.36978662     0.04823636     0.00000000 
+##  factor(educ)7  factor(educ)8  factor(educ)9 
+##     0.05324577    -0.03971374    -0.11366162 
+## factor(educ)10 factor(educ)11 factor(educ)12 
+##     0.01499702    -0.14431246     0.04961898 
+## factor(educ)13 factor(educ)14 factor(educ)15 
+##     0.04280605     0.09321213     0.04139547 
+## factor(educ)16          black           hisp 
+##     0.10397505    -0.31192515     0.00000000 
+##        married         nodegr            u74 
+##     0.13694015    -0.17185823    -0.03896622 
+##            u75 
+##    -0.04858863</code></pre>
 <p>The open circles represent the unmatched data; the closer the estimate to zero, the better. We can see that most difference scores improved, but some got worst, probably due to the exclusion of small categories.</p>
 </div>
 
@@ -517,6 +530,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

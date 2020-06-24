@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -83,7 +83,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -232,6 +231,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -243,18 +243,6 @@ $(document).ready(function () {
   display: none;
 }
 </style>
-
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
 
 <!-- code folding -->
 
@@ -328,6 +316,19 @@ $(document).ready(function () {
     </li>
     <li>
       <a href="result-report.html">Reporting of Results</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    ML
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">ML</li>
+    <li>
+      <a href="ml_ts.html"></a>
     </li>
   </ul>
 </li>
@@ -428,9 +429,10 @@ m &lt;- lmer(Reaction
              ( 1 | Subject), 
            data=sleepstudy)
 summary(m)</code></pre>
-<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
-## lmerModLmerTest]
-## Formula: Reaction ~ Days * lunch - 1 + (1 | Subject)
+<pre><code>## Linear mixed model fit by REML. t-tests use
+##   Satterthwaite&#39;s method [lmerModLmerTest]
+## Formula: 
+## Reaction ~ Days * lunch - 1 + (1 | Subject)
 ##    Data: sleepstudy
 ## 
 ## REML criterion at convergence: 1649.2
@@ -446,33 +448,51 @@ summary(m)</code></pre>
 ## Number of obs: 180, groups:  Subject, 18
 ## 
 ## Fixed effects:
-##              Estimate Std. Error       df t value Pr(&gt;|t|)    
-## Days0        246.8192    14.4893  85.1505  17.035   &lt;2e-16 ***
-## Days1        255.0855    14.5139  85.3531  17.575   &lt;2e-16 ***
-## Days2        273.5259    14.4860  85.1232  18.882   &lt;2e-16 ***
-## Days3        276.9178    14.4908  85.1647  19.110   &lt;2e-16 ***
-## Days4        284.7537    14.4952  85.1980  19.645   &lt;2e-16 ***
-## Days5        296.5687    14.4947  85.1951  20.461   &lt;2e-16 ***
-## Days6        304.6028    14.4943  85.1933  21.015   &lt;2e-16 ***
-## Days7        320.0012    14.4825  85.0944  22.096   &lt;2e-16 ***
-## Days8        333.5518    14.5143  85.3553  22.981   &lt;2e-16 ***
-## Days9        355.1328    14.4890  85.1489  24.511   &lt;2e-16 ***
-## lunch1        17.6987    15.8609 145.2865   1.116    0.266    
-## Days1:lunch1  -0.7602    22.3905 145.3677  -0.034    0.973    
-## Days2:lunch1 -32.3939    22.3023 145.0043  -1.452    0.149    
-## Days3:lunch1  -6.7652    22.3490 145.1893  -0.303    0.763    
-## Days4:lunch1 -10.6864    22.8456 146.1163  -0.468    0.641    
-## Days5:lunch1   3.8109    22.3134 145.0470   0.171    0.865    
-## Days6:lunch1  -4.0628    22.8441 146.1068  -0.178    0.859    
-## Days7:lunch1 -19.9499    22.3121 145.0389  -0.894    0.373    
-## Days8:lunch1 -12.1588    22.3645 145.2594  -0.544    0.588    
-## Days9:lunch1 -25.4056    22.8414 146.0916  -1.112    0.268    
+##              Estimate Std. Error       df
+## Days0        246.8192    14.4893  85.1507
+## Days1        255.0855    14.5139  85.3533
+## Days2        273.5259    14.4860  85.1234
+## Days3        276.9178    14.4908  85.1649
+## Days4        284.7536    14.4952  85.1981
+## Days5        296.5687    14.4947  85.1952
+## Days6        304.6028    14.4943  85.1935
+## Days7        320.0012    14.4825  85.0946
+## Days8        333.5518    14.5143  85.3555
+## Days9        355.1328    14.4890  85.1491
+## lunch1        17.6987    15.8609 145.2865
+## Days1:lunch1  -0.7602    22.3905 145.3677
+## Days2:lunch1 -32.3939    22.3023 145.0043
+## Days3:lunch1  -6.7652    22.3490 145.1892
+## Days4:lunch1 -10.6863    22.8456 146.1162
+## Days5:lunch1   3.8109    22.3134 145.0470
+## Days6:lunch1  -4.0628    22.8441 146.1067
+## Days7:lunch1 -19.9499    22.3121 145.0389
+## Days8:lunch1 -12.1588    22.3645 145.2594
+## Days9:lunch1 -25.4056    22.8414 146.0916
+##              t value Pr(&gt;|t|)    
+## Days0         17.035   &lt;2e-16 ***
+## Days1         17.575   &lt;2e-16 ***
+## Days2         18.882   &lt;2e-16 ***
+## Days3         19.110   &lt;2e-16 ***
+## Days4         19.645   &lt;2e-16 ***
+## Days5         20.461   &lt;2e-16 ***
+## Days6         21.015   &lt;2e-16 ***
+## Days7         22.096   &lt;2e-16 ***
+## Days8         22.981   &lt;2e-16 ***
+## Days9         24.511   &lt;2e-16 ***
+## lunch1         1.116    0.266    
+## Days1:lunch1  -0.034    0.973    
+## Days2:lunch1  -1.452    0.149    
+## Days3:lunch1  -0.303    0.763    
+## Days4:lunch1  -0.468    0.641    
+## Days5:lunch1   0.171    0.865    
+## Days6:lunch1  -0.178    0.859    
+## Days7:lunch1  -0.894    0.373    
+## Days8:lunch1  -0.544    0.588    
+## Days9:lunch1  -1.112    0.268    
 ## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<pre><code>## 
-## Correlation matrix not shown by default, as p = 20 &gt; 12.
-## Use print(x, correlation=TRUE)  or
-##     vcov(x)        if you need it</code></pre>
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <p>From the above output, we can see that there are main effects of individual days on reaction, no effect of lunch and various estimates of the interaction between lunch and a particular day. As in the previous tutorial, we should interpret main effects of days as effects without lunch (lunch = 0). In addition to the main effect of lunch, each day will receive an additional coefficient given by the interaction coefficient.</p>
 <p>The summary shows also that the interactions are not significant. But if we are interested in the differences between all the days and the first day of the experiment, Day 1? How can we compare all the other days to Day 1 in particular? First, we need to compute all the combinations of the levels of the factor Day and Lunch:</p>
 <pre class="r"><code>group &lt;- paste0(sleepstudy$Days, sleepstudy$lunch)
@@ -480,69 +500,111 @@ group &lt;- aggregate(model.matrix(m) ~ group, FUN=mean)
 # group
 rownames(group) &lt;- group$group
 (group &lt;- group[,-1])</code></pre>
-<pre><code>##    Days0 Days1 Days2 Days3 Days4 Days5 Days6 Days7 Days8 Days9 lunch1
-## 00     1     0     0     0     0     0     0     0     0     0      0
-## 01     1     0     0     0     0     0     0     0     0     0      1
-## 10     0     1     0     0     0     0     0     0     0     0      0
-## 11     0     1     0     0     0     0     0     0     0     0      1
-## 20     0     0     1     0     0     0     0     0     0     0      0
-## 21     0     0     1     0     0     0     0     0     0     0      1
-## 30     0     0     0     1     0     0     0     0     0     0      0
-## 31     0     0     0     1     0     0     0     0     0     0      1
-## 40     0     0     0     0     1     0     0     0     0     0      0
-## 41     0     0     0     0     1     0     0     0     0     0      1
-## 50     0     0     0     0     0     1     0     0     0     0      0
-## 51     0     0     0     0     0     1     0     0     0     0      1
-## 60     0     0     0     0     0     0     1     0     0     0      0
-## 61     0     0     0     0     0     0     1     0     0     0      1
-## 70     0     0     0     0     0     0     0     1     0     0      0
-## 71     0     0     0     0     0     0     0     1     0     0      1
-## 80     0     0     0     0     0     0     0     0     1     0      0
-## 81     0     0     0     0     0     0     0     0     1     0      1
-## 90     0     0     0     0     0     0     0     0     0     1      0
-## 91     0     0     0     0     0     0     0     0     0     1      1
-##    Days1:lunch1 Days2:lunch1 Days3:lunch1 Days4:lunch1 Days5:lunch1
-## 00            0            0            0            0            0
-## 01            0            0            0            0            0
-## 10            0            0            0            0            0
-## 11            1            0            0            0            0
-## 20            0            0            0            0            0
-## 21            0            1            0            0            0
-## 30            0            0            0            0            0
-## 31            0            0            1            0            0
-## 40            0            0            0            0            0
-## 41            0            0            0            1            0
-## 50            0            0            0            0            0
-## 51            0            0            0            0            1
-## 60            0            0            0            0            0
-## 61            0            0            0            0            0
-## 70            0            0            0            0            0
-## 71            0            0            0            0            0
-## 80            0            0            0            0            0
-## 81            0            0            0            0            0
-## 90            0            0            0            0            0
-## 91            0            0            0            0            0
-##    Days6:lunch1 Days7:lunch1 Days8:lunch1 Days9:lunch1
-## 00            0            0            0            0
-## 01            0            0            0            0
-## 10            0            0            0            0
-## 11            0            0            0            0
-## 20            0            0            0            0
-## 21            0            0            0            0
-## 30            0            0            0            0
-## 31            0            0            0            0
-## 40            0            0            0            0
-## 41            0            0            0            0
-## 50            0            0            0            0
-## 51            0            0            0            0
-## 60            0            0            0            0
-## 61            1            0            0            0
-## 70            0            0            0            0
-## 71            0            1            0            0
-## 80            0            0            0            0
-## 81            0            0            1            0
-## 90            0            0            0            0
-## 91            0            0            0            1</code></pre>
+<pre><code>##    Days0 Days1 Days2 Days3 Days4 Days5 Days6
+## 00     1     0     0     0     0     0     0
+## 01     1     0     0     0     0     0     0
+## 10     0     1     0     0     0     0     0
+## 11     0     1     0     0     0     0     0
+## 20     0     0     1     0     0     0     0
+## 21     0     0     1     0     0     0     0
+## 30     0     0     0     1     0     0     0
+## 31     0     0     0     1     0     0     0
+## 40     0     0     0     0     1     0     0
+## 41     0     0     0     0     1     0     0
+## 50     0     0     0     0     0     1     0
+## 51     0     0     0     0     0     1     0
+## 60     0     0     0     0     0     0     1
+## 61     0     0     0     0     0     0     1
+## 70     0     0     0     0     0     0     0
+## 71     0     0     0     0     0     0     0
+## 80     0     0     0     0     0     0     0
+## 81     0     0     0     0     0     0     0
+## 90     0     0     0     0     0     0     0
+## 91     0     0     0     0     0     0     0
+##    Days7 Days8 Days9 lunch1 Days1:lunch1
+## 00     0     0     0      0            0
+## 01     0     0     0      1            0
+## 10     0     0     0      0            0
+## 11     0     0     0      1            1
+## 20     0     0     0      0            0
+## 21     0     0     0      1            0
+## 30     0     0     0      0            0
+## 31     0     0     0      1            0
+## 40     0     0     0      0            0
+## 41     0     0     0      1            0
+## 50     0     0     0      0            0
+## 51     0     0     0      1            0
+## 60     0     0     0      0            0
+## 61     0     0     0      1            0
+## 70     1     0     0      0            0
+## 71     1     0     0      1            0
+## 80     0     1     0      0            0
+## 81     0     1     0      1            0
+## 90     0     0     1      0            0
+## 91     0     0     1      1            0
+##    Days2:lunch1 Days3:lunch1 Days4:lunch1
+## 00            0            0            0
+## 01            0            0            0
+## 10            0            0            0
+## 11            0            0            0
+## 20            0            0            0
+## 21            1            0            0
+## 30            0            0            0
+## 31            0            1            0
+## 40            0            0            0
+## 41            0            0            1
+## 50            0            0            0
+## 51            0            0            0
+## 60            0            0            0
+## 61            0            0            0
+## 70            0            0            0
+## 71            0            0            0
+## 80            0            0            0
+## 81            0            0            0
+## 90            0            0            0
+## 91            0            0            0
+##    Days5:lunch1 Days6:lunch1 Days7:lunch1
+## 00            0            0            0
+## 01            0            0            0
+## 10            0            0            0
+## 11            0            0            0
+## 20            0            0            0
+## 21            0            0            0
+## 30            0            0            0
+## 31            0            0            0
+## 40            0            0            0
+## 41            0            0            0
+## 50            0            0            0
+## 51            1            0            0
+## 60            0            0            0
+## 61            0            1            0
+## 70            0            0            0
+## 71            0            0            1
+## 80            0            0            0
+## 81            0            0            0
+## 90            0            0            0
+## 91            0            0            0
+##    Days8:lunch1 Days9:lunch1
+## 00            0            0
+## 01            0            0
+## 10            0            0
+## 11            0            0
+## 20            0            0
+## 21            0            0
+## 30            0            0
+## 31            0            0
+## 40            0            0
+## 41            0            0
+## 50            0            0
+## 51            0            0
+## 60            0            0
+## 61            0            0
+## 70            0            0
+## 71            0            0
+## 80            0            0
+## 81            1            0
+## 90            0            0
+## 91            0            1</code></pre>
 <p>The first column summarises the interaction between day and lunch: we have Day 0 with lunch 0 and 1, day 1 with lunch 0 and 1… and so on. The other columns contains zeros and ones that represent the specification of the factor combination (day 0 and lunch 0, for example) in the extended model matrix. Now we can specify which comparisons we want to compute. In this case, we want to compare all days with lunch with day 1 with lunch:</p>
 <pre class="r"><code>contrasts &lt;- rbind(group[&quot;11&quot;,] - group[&quot;21&quot;,],
       group[&quot;11&quot;,] - group[&quot;31&quot;,],
@@ -553,27 +615,41 @@ rownames(group) &lt;- group$group
       group[&quot;11&quot;,] - group[&quot;81&quot;,],
       group[&quot;11&quot;,] - group[&quot;91&quot;,])
 head(contrasts)</code></pre>
-<pre><code>##     Days0 Days1 Days2 Days3 Days4 Days5 Days6 Days7 Days8 Days9 lunch1
-## 11      0     1    -1     0     0     0     0     0     0     0      0
-## 111     0     1     0    -1     0     0     0     0     0     0      0
-## 112     0     1     0     0    -1     0     0     0     0     0      0
-## 113     0     1     0     0     0    -1     0     0     0     0      0
-## 114     0     1     0     0     0     0    -1     0     0     0      0
-## 115     0     1     0     0     0     0     0    -1     0     0      0
-##     Days1:lunch1 Days2:lunch1 Days3:lunch1 Days4:lunch1 Days5:lunch1
-## 11             1           -1            0            0            0
-## 111            1            0           -1            0            0
-## 112            1            0            0           -1            0
-## 113            1            0            0            0           -1
-## 114            1            0            0            0            0
-## 115            1            0            0            0            0
-##     Days6:lunch1 Days7:lunch1 Days8:lunch1 Days9:lunch1
-## 11             0            0            0            0
-## 111            0            0            0            0
-## 112            0            0            0            0
-## 113            0            0            0            0
-## 114           -1            0            0            0
-## 115            0           -1            0            0</code></pre>
+<pre><code>##     Days0 Days1 Days2 Days3 Days4 Days5 Days6
+## 11      0     1    -1     0     0     0     0
+## 111     0     1     0    -1     0     0     0
+## 112     0     1     0     0    -1     0     0
+## 113     0     1     0     0     0    -1     0
+## 114     0     1     0     0     0     0    -1
+## 115     0     1     0     0     0     0     0
+##     Days7 Days8 Days9 lunch1 Days1:lunch1
+## 11      0     0     0      0            1
+## 111     0     0     0      0            1
+## 112     0     0     0      0            1
+## 113     0     0     0      0            1
+## 114     0     0     0      0            1
+## 115    -1     0     0      0            1
+##     Days2:lunch1 Days3:lunch1 Days4:lunch1
+## 11            -1            0            0
+## 111            0           -1            0
+## 112            0            0           -1
+## 113            0            0            0
+## 114            0            0            0
+## 115            0            0            0
+##     Days5:lunch1 Days6:lunch1 Days7:lunch1
+## 11             0            0            0
+## 111            0            0            0
+## 112            0            0            0
+## 113           -1            0            0
+## 114            0           -1            0
+## 115            0            0           -1
+##     Days8:lunch1 Days9:lunch1
+## 11             0            0
+## 111            0            0
+## 112            0            0
+## 113            0            0
+## 114            0            0
+## 115            0            0</code></pre>
 <pre class="r"><code>library(multcomp)
 
 # Transform into Matrix
@@ -595,26 +671,54 @@ comparisons</code></pre>
 ## Fit: lmer(formula = Reaction ~ Days * lunch - 1 + (1 | Subject), data = sleepstudy)
 ## 
 ## Linear Hypotheses:
-##                                           Estimate Std. Error z value
-## Lunch on Day 1 versus Lunch on Day 2 == 0    13.19      14.51   0.909
-## Lunch on Day 1 versus Lunch on Day 3 == 0   -15.83      14.53  -1.089
-## Lunch on Day 1 versus Lunch on Day 4 == 0   -19.74      14.36  -1.375
-## Lunch on Day 1 versus Lunch on Day 5 == 0   -46.05      14.70  -3.134
-## Lunch on Day 1 versus Lunch on Day 6 == 0   -46.21      14.53  -3.180
-## Lunch on Day 1 versus Lunch on Day 7 == 0   -45.73      14.52  -3.148
-## Lunch on Day 1 versus Lunch on Day 8 == 0   -67.07      14.87  -4.510
-## Lunch on Day 1 versus Lunch on Day 9 == 0   -75.40      14.68  -5.137
-##                                           Pr(&gt;|z|)    
-## Lunch on Day 1 versus Lunch on Day 2 == 0   0.9267    
-## Lunch on Day 1 versus Lunch on Day 3 == 0   0.8346    
-## Lunch on Day 1 versus Lunch on Day 4 == 0   0.6315    
-## Lunch on Day 1 versus Lunch on Day 5 == 0   0.0120 *  
-## Lunch on Day 1 versus Lunch on Day 6 == 0   0.0103 *  
-## Lunch on Day 1 versus Lunch on Day 7 == 0   0.0112 *  
-## Lunch on Day 1 versus Lunch on Day 8 == 0   &lt;0.001 ***
-## Lunch on Day 1 versus Lunch on Day 9 == 0   &lt;0.001 ***
+##                                           Estimate
+## Lunch on Day 1 versus Lunch on Day 2 == 0    13.19
+## Lunch on Day 1 versus Lunch on Day 3 == 0   -15.83
+## Lunch on Day 1 versus Lunch on Day 4 == 0   -19.74
+## Lunch on Day 1 versus Lunch on Day 5 == 0   -46.05
+## Lunch on Day 1 versus Lunch on Day 6 == 0   -46.21
+## Lunch on Day 1 versus Lunch on Day 7 == 0   -45.73
+## Lunch on Day 1 versus Lunch on Day 8 == 0   -67.07
+## Lunch on Day 1 versus Lunch on Day 9 == 0   -75.40
+##                                           Std. Error
+## Lunch on Day 1 versus Lunch on Day 2 == 0      14.51
+## Lunch on Day 1 versus Lunch on Day 3 == 0      14.53
+## Lunch on Day 1 versus Lunch on Day 4 == 0      14.36
+## Lunch on Day 1 versus Lunch on Day 5 == 0      14.70
+## Lunch on Day 1 versus Lunch on Day 6 == 0      14.53
+## Lunch on Day 1 versus Lunch on Day 7 == 0      14.52
+## Lunch on Day 1 versus Lunch on Day 8 == 0      14.87
+## Lunch on Day 1 versus Lunch on Day 9 == 0      14.68
+##                                           z value
+## Lunch on Day 1 versus Lunch on Day 2 == 0   0.909
+## Lunch on Day 1 versus Lunch on Day 3 == 0  -1.089
+## Lunch on Day 1 versus Lunch on Day 4 == 0  -1.375
+## Lunch on Day 1 versus Lunch on Day 5 == 0  -3.134
+## Lunch on Day 1 versus Lunch on Day 6 == 0  -3.180
+## Lunch on Day 1 versus Lunch on Day 7 == 0  -3.148
+## Lunch on Day 1 versus Lunch on Day 8 == 0  -4.510
+## Lunch on Day 1 versus Lunch on Day 9 == 0  -5.137
+##                                           Pr(&gt;|z|)
+## Lunch on Day 1 versus Lunch on Day 2 == 0   0.9267
+## Lunch on Day 1 versus Lunch on Day 3 == 0   0.8346
+## Lunch on Day 1 versus Lunch on Day 4 == 0   0.6315
+## Lunch on Day 1 versus Lunch on Day 5 == 0   0.0120
+## Lunch on Day 1 versus Lunch on Day 6 == 0   0.0103
+## Lunch on Day 1 versus Lunch on Day 7 == 0   0.0112
+## Lunch on Day 1 versus Lunch on Day 8 == 0   &lt;0.001
+## Lunch on Day 1 versus Lunch on Day 9 == 0   &lt;0.001
+##                                              
+## Lunch on Day 1 versus Lunch on Day 2 == 0    
+## Lunch on Day 1 versus Lunch on Day 3 == 0    
+## Lunch on Day 1 versus Lunch on Day 4 == 0    
+## Lunch on Day 1 versus Lunch on Day 5 == 0 *  
+## Lunch on Day 1 versus Lunch on Day 6 == 0 *  
+## Lunch on Day 1 versus Lunch on Day 7 == 0 *  
+## Lunch on Day 1 versus Lunch on Day 8 == 0 ***
+## Lunch on Day 1 versus Lunch on Day 9 == 0 ***
 ## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## (Adjusted p values reported -- single-step method)</code></pre>
 <p>We can see from this output that, even if the p-values of the interaction effects were not significant, the effect of lunch in different days is different. In this example, The difference in Reaction progressively grows and becomes significantly different from Day 1 starting from Day 5.</p>
 <p>Let’s format the results of the contrasts test into a table:</p>
@@ -735,6 +839,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -83,7 +83,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -232,6 +231,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -243,18 +243,6 @@ $(document).ready(function () {
   display: none;
 }
 </style>
-
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
 
 <!-- code folding -->
 
@@ -331,6 +319,19 @@ $(document).ready(function () {
     </li>
   </ul>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    ML
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">ML</li>
+    <li>
+      <a href="ml_ts.html"></a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -382,12 +383,12 @@ names(df)&lt;-c(&quot;treatment&quot;, &quot;score&quot;)
 df$treatment&lt;-as.factor(df$treatment)
 head(df)</code></pre>
 <pre><code>##   treatment score
-## 1         1 82.92
-## 2         1 72.74
-## 3         1 83.90
-## 4         1 72.09
-## 5         1 68.40
-## 6         1 75.42</code></pre>
+## 1         1 87.92
+## 2         1 99.05
+## 3         1 77.86
+## 4         1 81.31
+## 5         1 76.33
+## 6         1 79.16</code></pre>
 <p>Let’s calculate the variances</p>
 <pre class="r"><code># Root mean squared error for each group
 av.sqrt1&lt;-mean(sqrt1&lt;- with(df, sqrt(score[treatment==1])))
@@ -411,10 +412,10 @@ Vwith&lt;-(av.sqrt1+av.sqrt2+av.sqrt3)/3
 Vbet&lt;-((m1-GM)^2)+((m2-GM)^2)+((m3-GM)^2)/2
 
 cat(&quot;Within Group Variance:&quot;, round(Vwith, 2), &quot;\n&quot;)</code></pre>
-<pre><code>## Within Group Variance: 9.05</code></pre>
+<pre><code>## Within Group Variance: 8.86</code></pre>
 <pre class="r"><code>cat(&quot;Between Group Variance:&quot;, round(Vbet, 2))</code></pre>
-<pre><code>## Between Group Variance: 51.4</code></pre>
-<p>Within the groups, observations vary by a factor of 9.048307 on average, due to chance factors, such as unsystematic measurement error, idiosynchratic differences between participants and other unknown factors. The average variance between the groups is 51.400866: the statistical test will investigate if this variance is attributable to treatment - a factor that systematically varies between the groups.</p>
+<pre><code>## Between Group Variance: 6.41</code></pre>
+<p>Within the groups, observations vary by a factor of 8.8587803 on average, due to chance factors, such as unsystematic measurement error, idiosynchratic differences between participants and other unknown factors. The average variance between the groups is 6.4071633: the statistical test will investigate if this variance is attributable to treatment - a factor that systematically varies between the groups.</p>
 </div>
 <div id="running-the-anova" class="section level1">
 <h1>Running the ANOVA</h1>
@@ -422,51 +423,49 @@ cat(&quot;Within Group Variance:&quot;, round(Vwith, 2), &quot;\n&quot;)</code><
 <pre class="r"><code>aov&lt;-aov(score~treatment, df)
 s.aov&lt;-summary(aov) 
 s.aov</code></pre>
-<pre><code>##             Df Sum Sq Mean Sq F value Pr(&gt;F)  
-## treatment    2    712   356.1   2.851 0.0753 .
-## Residuals   27   3372   124.9                 
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre><code>##             Df Sum Sq Mean Sq F value Pr(&gt;F)
+## treatment    2   95.8   47.89   0.443  0.647
+## Residuals   27 2921.8  108.21</code></pre>
 <p>Means per group (that we calculated manually before), and coefficients of the treatment effect (unstandardised effect size), with standard error:</p>
 <pre class="r"><code>model.tables(aov, &quot;mean&quot;, se=TRUE) #means</code></pre>
 <pre><code>## Tables of means
 ## Grand mean
-##        
-## 82.276 
+##          
+## 78.80133 
 ## 
 ##  treatment 
 ## treatment
 ##     1     2     3 
-## 76.70 81.55 88.57 
+## 79.88 80.24 76.28 
 ## 
 ## Standard errors for differences of means
 ##         treatment
-##             4.998
+##             4.652
 ## replic.        10</code></pre>
 <pre class="r"><code>model.tables(aov, &quot;effects&quot;, se=TRUE) #coefficients</code></pre>
 <pre><code>## Tables of effects
 ## 
 ##  treatment 
 ## treatment
-##      1      2      3 
-## -5.573 -0.723  6.296 
+##       1       2       3 
+##  1.0787  1.4397 -2.5183 
 ## 
 ## Standard errors of effects
 ##         treatment
-##             3.534
+##              3.29
 ## replic.        10</code></pre>
 <p>Let’s format the output a bit:</p>
 <pre class="r"><code>library(broom)
 tidy.summ&lt;-tidy(aov)
 tidy.summ</code></pre>
 <pre><code>## # A tibble: 2 x 6
-##   term         df sumsq meansq statistic p.value
-##   &lt;chr&gt;     &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
-## 1 treatment     2  712.   356.      2.85  0.0753
-## 2 Residuals    27 3372.   125.     NA    NA</code></pre>
+##   term        df  sumsq meansq statistic p.value
+##   &lt;chr&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1 treatme…     2   95.8   47.9     0.443   0.647
+## 2 Residua…    27 2922.   108.     NA      NA</code></pre>
 <div id="reporting" class="section level2">
 <h2>Reporting</h2>
-<p>The treatment effect did not give a statistically significant difference, with F(2,27) = 2.85, p-value = 0.08</p>
+<p>The treatment effect did not give a statistically significant difference, with F(2,27) = 0.44, p-value = 0.65</p>
 </div>
 </div>
 <div id="effect-size" class="section level1">
@@ -479,8 +478,8 @@ R_squared &lt;- sum_squares_treatment /
             (sum_squares_treatment + sum_squares_residuals)
 
 R_squared</code></pre>
-<pre><code>## [1] 0.1743743</code></pre>
-<p>The effects size R-Squared is 0.17.</p>
+<pre><code>## [1] 0.03174119</code></pre>
+<p>The effects size R-Squared is 0.03.</p>
 </div>
 <div id="factorial-anova" class="section level1">
 <h1>Factorial Anova</h1>
@@ -507,7 +506,7 @@ str(fa.df)</code></pre>
 ##  $ subj    : Factor w/ 60 levels &quot;1&quot;,&quot;10&quot;,&quot;11&quot;,..: 1 12 23 34 45 56 58 59 60 2 ...
 ##  $ group   : Factor w/ 2 levels &quot;a&quot;,&quot;b&quot;: 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ test    : Factor w/ 2 levels &quot;y&quot;,&quot;z&quot;: 1 2 1 2 1 2 1 2 1 2 ...
-##  $ response: num  15.6 14.8 15 14.5 14.3 ...</code></pre>
+##  $ response: num  15.9 15.5 15.2 14.4 15.7 ...</code></pre>
 <p>Output:</p>
 <pre class="r"><code>av&lt;-aov(response ~ group*test, fa.df)
 tidy.summ&lt;-tidy(av)</code></pre>
@@ -521,7 +520,7 @@ ES2&lt;-(ssq[2]*dof[2])/(ssq[2]+dof[2]+dof_res)
 ES3&lt;-(ssq[3]*dof[3])/(ssq[3]+dof[3]+dof_res)
 
 cat(&quot;ES of group:&quot;, ifelse(ES1&lt;0.001, &quot;&lt; 0.001&quot;, round(ES1, 2)), &quot;\n&quot;)</code></pre>
-<pre><code>## ES of group: 0.68</code></pre>
+<pre><code>## ES of group: 0.65</code></pre>
 <pre class="r"><code>cat(&quot;ES of test:&quot;, ifelse(ES2&lt;0.009, &quot;&lt; 0.001&quot;, round(ES2, 2)), &quot;\n&quot;)</code></pre>
 <pre><code>## ES of test: &lt; 0.001</code></pre>
 <pre class="r"><code>cat(&quot;ES of interaction:&quot;, ifelse(ES3&lt;0.009, &quot;&lt; 0.001&quot;, round(ES3, 2)), &quot;\n&quot;)</code></pre>
@@ -529,7 +528,7 @@ cat(&quot;ES of group:&quot;, ifelse(ES1&lt;0.001, &quot;&lt; 0.001&quot;, round
 </div>
 <div id="repeated-measures-anova" class="section level1">
 <h1>Repeated measures ANOVA</h1>
-<p>One of the assumptions of ANOVA is that the groups of which we are examining the means are independent. In other words, they do not have to be correlated, as it happens when you measure the same things on the same group of individuals. Broadly speaking, the errors will be smaller because measurements come from the same people, and this could significantly misallign your result. Look at our residual in the previous ANOVA: it’s approximately 17 but it might be bigger if we didn’t account for the correlation! The approach of ANOVA to this problem is to separate the calculations depending on different “strata”, and run a separate linear regression for each of them. In the formula, we need to specify the strata, for example, 1 for each subject. Note: while this is similar to a mixed model, it is <em>NOT a mixed model</em>. A mixed model does not run a separate least-square regression for each strata, but rather allow a different estimate of each coefficient within a pre-defined nesting.</p>
+<p>One of the assumptions of ANOVA is that the groups of which we are examining the means are independent. In other words, they do not have to be correlated, as it happens when you measure the same things on the same group of individuals. Broadly speaking, the errors will be smaller because measurements come from the same people, and this could significantly misallign your result. Look at our residual in the previous ANOVA: it’s approximately 26 but it might be bigger if we didn’t account for the correlation! The approach of ANOVA to this problem is to separate the calculations depending on different “strata”, and run a separate linear regression for each of them. In the formula, we need to specify the strata, for example, 1 for each subject. Note: while this is similar to a mixed model, it is <em>NOT a mixed model</em>. A mixed model does not run a separate least-square regression for each strata, but rather allow a different estimate of each coefficient within a pre-defined nesting.</p>
 <p>In this example, each participant of group A and B made the two measurements of tests y and z. So we have two scores for each subject (within-subject design).</p>
 <pre class="r"><code>subjr&lt;-rep(1:30,2)
 subjr&lt;-sort(subjr)
@@ -539,13 +538,13 @@ responser&lt;-sample(round(rnorm(500, mean=8, sd=6), digits=3), 60)
 rd.df&lt;-as.data.frame(cbind(subjr, groupr, testr, responser))
 rd.df$responser&lt;-as.numeric(as.character(rd.df$responser))
 summary(rd.df)</code></pre>
-<pre><code>##      subjr    groupr testr    responser     
-##  1      : 2   a:30   y:30   Min.   :-6.868  
-##  10     : 2   b:30   z:30   1st Qu.: 3.829  
-##  11     : 2                 Median : 7.617  
-##  12     : 2                 Mean   : 8.103  
-##  13     : 2                 3rd Qu.:12.119  
-##  14     : 2                 Max.   :26.489  
+<pre><code>##      subjr    groupr testr    responser      
+##  1      : 2   a:30   y:30   Min.   :-10.563  
+##  10     : 2   b:30   z:30   1st Qu.:  4.798  
+##  11     : 2                 Median :  8.255  
+##  12     : 2                 Mean   :  7.873  
+##  13     : 2                 3rd Qu.: 12.132  
+##  14     : 2                 Max.   : 19.226  
 ##  (Other):48</code></pre>
 <pre class="r"><code>r.av&lt;-aov(responser ~ groupr*testr + Error(subjr), data = rd.df)
 summ.tidy.rr&lt;-tidy(r.av)
@@ -554,26 +553,27 @@ summ.tidy.rr.res&lt;-subset(summ.tidy.rr, term==&quot;Residuals&quot;, select = 
 <p>Here are the statistics of the effects. We have three estimates, just as before, 2 for the effects of group and test, and their reciprocal interaction. The “stratum” indicates the grouping - in this case overall and repeated within subject. First, the between-subject factor is listed (group), and then the within-subject factors (test and its interaction):</p>
 <pre class="r"><code>summ.tidy.rr.eff</code></pre>
 <pre><code>## # A tibble: 3 x 7
-##   stratum term            df  sumsq meansq statistic p.value
-##   &lt;chr&gt;   &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
-## 1 subjr   groupr           1   4.06   4.06    0.0862  0.771 
-## 2 Within  testr            1  12.7   12.7     0.469   0.499 
-## 3 Within  groupr:testr     1 145.   145.      5.36    0.0281</code></pre>
+##   stratum term     df  sumsq meansq statistic
+##   &lt;chr&gt;   &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;
+## 1 subjr   grou…     1 32.2   32.2      0.905 
+## 2 Within  testr     1  0.850  0.850    0.0276
+## 3 Within  grou…     1 66.1   66.1      2.15  
+## # … with 1 more variable: p.value &lt;dbl&gt;</code></pre>
 <p>In fact, we have two residual errors this time, the between and the within subject errors:</p>
 <pre class="r"><code>summ.tidy.rr.res</code></pre>
 <pre><code>## # A tibble: 2 x 5
 ##   stratum term         df sumsq meansq
 ##   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
-## 1 subjr   Residuals    28 1318.   47.1
-## 2 Within  Residuals    28  755.   27.0</code></pre>
+## 1 subjr   Residuals    28  995.   35.6
+## 2 Within  Residuals    28  863.   30.8</code></pre>
 <p>We can calculate the percentage of variance explained by group, excluding the within-subject variation (partial ETA-Squared):</p>
 <pre class="r"><code>p.eta.group&lt;-summ.tidy.rr.eff$sumsq[1]/(summ.tidy.rr.eff$sumsq[1]+summ.tidy.rr.res$sumsq[1])
 cat(&quot;Partial Eta-Squared (group):&quot;, round(p.eta.group, 2))</code></pre>
-<pre><code>## Partial Eta-Squared (group): 0</code></pre>
+<pre><code>## Partial Eta-Squared (group): 0.03</code></pre>
 <p>The total eta-squared uses the total sum of squares, including both between and within subject errors:</p>
 <pre class="r"><code>eta.group&lt;-summ.tidy.rr.eff$sumsq[1]/(summ.tidy.rr.eff$sumsq[1]+summ.tidy.rr.res$sumsq[1]+summ.tidy.rr.res$sumsq[2])
 cat(&quot;Eta-Squared (group):&quot;, round(eta.group, 2))</code></pre>
-<pre><code>## Eta-Squared (group): 0</code></pre>
+<pre><code>## Eta-Squared (group): 0.02</code></pre>
 <p>In summary, the approach of repeated-measures anova to repeated measures is <em>separation</em>, ie, fitting strata-level regressions per each unit of repetition. This works well when the groups are balanced, ie, each subject has equal number of observations and, hence, degrees of freedom, on which the calculation of the sum of squares is based. But if a subject misses one observations, it needs to be dropped or imputed. When the groups are unbalanced and we don’t want to drop subjects or impute observations, we need to take another approach. One is to use a linear model adding a correlation term between observations, “relaxing” the assumption of independence (Marginal Model or GEE). Another approach is to introduce another kind of effect, the random effect, typical of the mixed model, that allow to extract individual-level estimates.</p>
 </div>
 
@@ -594,6 +594,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

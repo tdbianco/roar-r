@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Supervised Learning on Time-Series Data</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Hear me ROAR-R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="blog.html">Blog</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Exploring your data
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="propensity-scores.html">Matching Subsamples</a>
+    </li>
+    <li>
+      <a href="geo-info.html">Modelling multi-site data</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="anova.html">Anova</a>
+</li>
+<li>
+  <a href="lm-assumptions.html">LM</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LMM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lmm-essential-tutorial.html">Essential Tutorial</a>
+    </li>
+    <li>
+      <a href="lmm-contrasts-tutorial.html">Customising Contrasts</a>
+    </li>
+    <li>
+      <a href="lmm-het-var.html">Modelling Heterogeneus Variance</a>
+    </li>
+    <li>
+      <a href="result-report.html">Reporting of Results</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    ML
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">ML</li>
+    <li>
+      <a href="ml_ts.html"></a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Supervised Learning on Time-Series Data</h1>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a><ul>
+<li><a href="#feature-engineering">Feature Engineering</a></li>
+<li><a href="#create-train-and-test-set">Create train and test set</a></li>
+<li><a href="#build-a-baseline-model">Build a Baseline Model</a></li>
+<li><a href="#exponential-regression">Exponential Regression</a><ul>
+<li><a href="#addind-more-features">Addind more features</a></li>
+<li><a href="#adding-more-features2">Adding more features/2</a></li>
+</ul></li>
+<li><a href="#compare">Compare</a></li>
+<li><a href="#adding-predictors">Adding Predictors</a><ul>
+<li><a href="#compare-1">Compare</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#test-set">Test Set</a><ul>
+<li><a href="#compare-2">Compare</a></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>The following code applies to the ChickWeight Dataset, were we have a recording of each chick’s weight for a number of consecutive weeks (Time). Also, the chicks had 4 types of diet, recorded as a categorical variable. Our official aim is to apply a reliable method to predict the weight gain in new chicks in future studies. The unofficial (real) aim is to start understanding how feature selection and model training work.</p>
+<p>Note: I adapted this script from the (considerably more complex) articles: <a href="https://towardsdatascience.com/time-series-machine-learning-regression-framework-9ea33929009a" class="uri">https://towardsdatascience.com/time-series-machine-learning-regression-framework-9ea33929009a</a> <a href="https://hugobowne.github.io/machine-learning-r/03-Supervised-Learning-I/index.html" class="uri">https://hugobowne.github.io/machine-learning-r/03-Supervised-Learning-I/index.html</a></p>
+<pre class="r"><code>data(&quot;ChickWeight&quot;)
+summary(ChickWeight)</code></pre>
+<pre><code>##      weight           Time           Chick    
+##  Min.   : 35.0   Min.   : 0.00   13     : 12  
+##  1st Qu.: 63.0   1st Qu.: 4.00   9      : 12  
+##  Median :103.0   Median :10.00   20     : 12  
+##  Mean   :121.8   Mean   :10.72   10     : 12  
+##  3rd Qu.:163.8   3rd Qu.:16.00   17     : 12  
+##  Max.   :373.0   Max.   :21.00   19     : 12  
+##                                  (Other):506  
+##  Diet   
+##  1:220  
+##  2:120  
+##  3:120  
+##  4:118  
+##         
+##         
+## </code></pre>
+<pre class="r"><code>library(dplyr)
+library(ggplot2)
+ChickWeight %&gt;%
+  ggplot() +
+  geom_path(aes(x=Time, y=weight, col=Chick), show.legend = F) +
+  facet_wrap(~Diet) +
+  labs(subtitle = &quot;Diet&quot;,
+       caption = &quot;Each line is an individual chick.&quot;)</code></pre>
+<p><img src="ml_ts_files/figure-html/unnamed-chunk-2-1.png" width="672" /> # Supervised Learning</p>
+<div id="feature-engineering" class="section level2">
+<h2>Feature Engineering</h2>
+<p>One way of improving prediction is provide features to describe the time-series. For example, we can add a “lag” variable corresponding to the weight 1 week previously. We can add more than 1 lag (weight 2 weeks before, 3 weeks before…). Let’s start with 1 lag.</p>
+<pre class="r"><code>cw_ml &lt;- as.data.frame(ChickWeight) %&gt;%
+  group_by(Chick) %&gt;%
+  mutate(weight_1U_ago=lag(weight, 1),
+         diff_1U=weight-weight_1U_ago) %&gt;%
+  filter(!is.na(weight_1U_ago))
+head(cw_ml)</code></pre>
+<pre><code>## # A tibble: 6 x 6
+## # Groups:   Chick [1]
+##   weight  Time Chick Diet  weight_1U_ago diff_1U
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;ord&gt; &lt;fct&gt;         &lt;dbl&gt;   &lt;dbl&gt;
+## 1     51     2 1     1                42       9
+## 2     59     4 1     1                51       8
+## 3     64     6 1     1                59       5
+## 4     76     8 1     1                64      12
+## 5     93    10 1     1                76      17
+## 6    106    12 1     1                93      13</code></pre>
+</div>
+<div id="create-train-and-test-set" class="section level2">
+<h2>Create train and test set</h2>
+<p>We save one portion of the data (the test set) for later, to validate our analysis.</p>
+<pre class="r"><code>library(caret)
+chicks &lt;- unique(cw_ml$Chick)
+## 75% of the sample size
+smp_size &lt;- floor(0.75 * length(chicks))
+
+## set the seed to make your partition reproducible
+set.seed(88)
+train_chicks &lt;- sample(seq_len(length(chicks)), size = smp_size)
+
+train &lt;- subset(cw_ml, Chick %in% train_chicks)
+library(Hmisc)
+# &quot;A&quot; %nin% &quot;B&quot;
+test &lt;- subset(cw_ml, Chick %nin% train_chicks)</code></pre>
+</div>
+<div id="build-a-baseline-model" class="section level2">
+<h2>Build a Baseline Model</h2>
+<p>We need a baseline model to start off and compare to when we calculate the error metrics. I don’t know much of chicks weight, so I’ll take the assumption (a bit stretchy) that weight does not change across time.</p>
+<pre class="r"><code># Build baseline model
+train_pred &lt;- train %&gt;%
+  group_by(Chick) %&gt;%
+  mutate(pred_bas=head(weight_1U_ago, 1))
+head(train_pred)</code></pre>
+<pre><code>## # A tibble: 6 x 7
+## # Groups:   Chick [1]
+##   weight  Time Chick Diet  weight_1U_ago diff_1U
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;ord&gt; &lt;fct&gt;         &lt;dbl&gt;   &lt;dbl&gt;
+## 1     51     2 1     1                42       9
+## 2     59     4 1     1                51       8
+## 3     64     6 1     1                59       5
+## 4     76     8 1     1                64      12
+## 5     93    10 1     1                76      17
+## 6    106    12 1     1                93      13
+## # … with 1 more variable: pred_bas &lt;dbl&gt;</code></pre>
+<p>Now we have to evaluate how the baseline model perform, in terms of RMSE, through cross-validation. We can consider each unit of Time as a fold.</p>
+<pre class="r"><code>t &lt;- unique(train_pred$Time)
+bas_error &lt;- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(train_pred, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$pred_bas)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = round(sqrt(s_sq_d), 2)
+  bas_error = rbind(bas_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=round(rmse/round(mean(tr_temp$weight), 2), 2)))
+}
+bas_error</code></pre>
+<pre><code>##    fold Time  Error N_Error
+## 1     2    4  19.30    0.32
+## 2     3    6  34.00    0.46
+## 3     4    8  51.71    0.57
+## 4     5   10  69.97    0.65
+## 5     6   12  94.14    0.73
+## 6     7   14 109.02    0.77
+## 7     8   16 136.50    0.81
+## 8     9   18 163.29    0.85
+## 9    10   20 184.20    0.87
+## 10   11   21 193.64    0.88</code></pre>
+<p>Total error for baseline model:</p>
+<pre class="r"><code>rmse_bas &lt;- mean(bas_error$Error)
+rmse_bas</code></pre>
+<pre><code>## [1] 105.577</code></pre>
+<p>Total normalised error for baseline model:</p>
+<pre class="r"><code>rmse_bas_n &lt;- mean(bas_error$Error)/mean(train_pred$weight)
+rmse_bas_n</code></pre>
+<pre><code>## [1] 0.8115589</code></pre>
+<p>The error gets bigger and bigger, because clearly this assumption does not fit the data. We can choose to improve the baseline model with various estimator, for example, we may use linear regression or random forest. In this case, we go for exponential regression.</p>
+</div>
+<div id="exponential-regression" class="section level2">
+<h2>Exponential Regression</h2>
+<p>We select the variables:</p>
+<pre class="r"><code>y &lt;- train$weight
+x &lt;- cbind(train$Time, train$weight_1U_ago, train$diff_1U)</code></pre>
+<p>And run the model on the train set:</p>
+<pre class="r"><code>e_lm1 &lt;- lm(log(y) ~ x,
+  data=train)</code></pre>
+<p>We calculate the predicted values based on this model:</p>
+<pre class="r"><code>train_pred$predx &lt;- predict(e_lm1)
+train_pred$predx_w &lt;- exp(train_pred$predx)</code></pre>
+<p>And estimate the error:</p>
+<pre class="r"><code>exp_error &lt;- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(train_pred, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$predx_w)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = round(sqrt(s_sq_d), 2)
+  exp_error = rbind(exp_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=round(rmse/round(mean(tr_temp$weight), 2), 2)))
+}
+exp_error</code></pre>
+<pre><code>##    fold Time Error N_Error
+## 1     2    4  2.83    0.05
+## 2     3    6  3.41    0.05
+## 3     4    8  7.52    0.08
+## 4     5   10 11.93    0.11
+## 5     6   12 11.50    0.09
+## 6     7   14 18.45    0.13
+## 7     8   16 13.21    0.08
+## 8     9   18 27.74    0.14
+## 9    10   20 34.75    0.16
+## 10   11   21 24.38    0.11</code></pre>
+<p>Total error for baseline model:</p>
+<pre class="r"><code>rmse_expx &lt;- mean(exp_error$Error)</code></pre>
+<p>Total normalised error for exponential model:</p>
+<pre class="r"><code>rmse_expx_N &lt;- mean(exp_error$Error)/mean(train_pred$weight)</code></pre>
+<div id="addind-more-features" class="section level3">
+<h3>Addind more features</h3>
+<p>The model may be further improved by adding more lag features to the dataset. Of course, adding more and more features determine a loss of data, so there is a limit that is reached when the number of features exceeds the fit to the data.</p>
+<p>Adding a 2nd feature:</p>
+<pre class="r"><code>trainx &lt;- as.data.frame(train) %&gt;%
+  group_by(Chick) %&gt;%
+  mutate(weight_2U_ago=lag(weight, 2),
+         diff_2U=weight-weight_2U_ago) %&gt;%
+  filter(!is.na(diff_2U))</code></pre>
+<pre class="r"><code>yx &lt;- trainx$weight
+xx &lt;- cbind(trainx$Time, trainx$weight_1U_ago, trainx$diff_1U, 
+            trainx$weight_2U_ago, trainx$diff_2U)</code></pre>
+<pre class="r"><code>e_lm2 &lt;- lm(log(yx) ~ xx,
+  data=trainx)</code></pre>
+<pre class="r"><code>trainx$pred &lt;- predict(e_lm2)
+trainx$pred_w &lt;- exp(trainx$pred)</code></pre>
+<pre class="r"><code>exp_error &lt;- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(trainx, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$pred_w)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = (sqrt(s_sq_d))
+  exp_error = rbind(exp_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=(rmse/(mean(tr_temp$weight)))))
+}
+exp_error</code></pre>
+<pre><code>##    fold Time     Error    N_Error
+## 1     2    4       NaN        NaN
+## 2     3    6  5.445396 0.07358643
+## 3     4    8  4.885473 0.05413267
+## 4     5   10  7.830893 0.07326199
+## 5     6   12  9.843077 0.07656672
+## 6     7   14 12.972573 0.09144559
+## 7     8   16 12.733544 0.07593697
+## 8     9   18 23.606029 0.12294807
+## 9    10   20 31.744234 0.15028381
+## 10   11   21 25.411135 0.11603258</code></pre>
+<p>Total error for baseline model:</p>
+<pre class="r"><code>rmse_expxx &lt;- mean(exp_error$Error, na.rm = TRUE)</code></pre>
+<p>Total normalised error for exponential model:</p>
+<pre class="r"><code>rmse_expxx_N &lt;- mean(exp_error$Error, na.rm = TRUE)/mean(trainx$weight)</code></pre>
+</div>
+<div id="adding-more-features2" class="section level3">
+<h3>Adding more features/2</h3>
+<p>Adding a 3rd feature:</p>
+<pre class="r"><code>trainxx &lt;- as.data.frame(trainx) %&gt;%
+  group_by(Chick) %&gt;%
+  mutate(weight_3U_ago=lag(weight, 3),
+         diff_3U=weight-weight_3U_ago) %&gt;%
+  filter(!is.na(diff_3U))</code></pre>
+<pre class="r"><code>yxx &lt;- trainxx$weight
+xxx &lt;- cbind(trainxx$Time, trainxx$weight_1U_ago, trainxx$diff_1U, 
+            trainxx$weight_2U_ago, trainxx$diff_2U, 
+            trainxx$weight_3U_ago, trainxx$diff_3U)</code></pre>
+<pre class="r"><code>e_lm3 &lt;- lm(log(yxx) ~ xxx,
+  data=trainxx)</code></pre>
+<pre class="r"><code>trainxx$pred &lt;- predict(e_lm3)
+trainxx$pred_w &lt;- exp(trainxx$pred)</code></pre>
+<pre class="r"><code>exp_error &lt;- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(trainxx, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$pred_w)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = (sqrt(s_sq_d))
+  exp_error = rbind(exp_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=(rmse/(mean(tr_temp$weight)))))
+}
+exp_error</code></pre>
+<pre><code>##    fold Time     Error    N_Error
+## 1     2    4       NaN        NaN
+## 2     3    6       NaN        NaN
+## 3     4    8       NaN        NaN
+## 4     5   10       NaN        NaN
+## 5     6   12  7.770166 0.06044209
+## 6     7   14  9.896044 0.06975868
+## 7     8   16 10.622023 0.06334483
+## 8     9   18 17.485834 0.09107205
+## 9    10   20 25.393040 0.12021593
+## 10   11   21 26.096050 0.11916004</code></pre>
+<p>Total error for baseline model:</p>
+<pre class="r"><code>rmse_expxxx &lt;- mean(exp_error$Error, na.rm = TRUE)</code></pre>
+<p>Total normalised error for exponential model:</p>
+<pre class="r"><code>rmse_expxxx_N &lt;- mean(exp_error$Error, na.rm = TRUE)/mean(trainx$weight)</code></pre>
+</div>
+</div>
+<div id="compare" class="section level2">
+<h2>Compare</h2>
+<pre class="r"><code>data.frame(Model=c(&quot;baseline&quot;, &quot;exp+1f&quot;, &quot;exp+2f&quot;, &quot;exp+3f&quot;), 
+           RMSE=c(rmse_bas, rmse_expx, rmse_expxx, rmse_expxxx),
+           &quot;Normalised RMSE&quot;=c(rmse_bas_n, rmse_expx_N, rmse_expxx_N, rmse_expxxx_N))</code></pre>
+<pre><code>##      Model      RMSE Normalised.RMSE
+## 1 baseline 105.57700       0.8115589
+## 2   exp+1f  15.57200       0.1197003
+## 3   exp+2f  14.94137       0.1014199
+## 4   exp+3f  16.21053       0.1100348</code></pre>
+<p>The RMSE gets smaller by adding 1-2 features, but starts to grow again when we add 3 features, meaning we are exceeding the fit to the data. We will then test adding a categorical predictor, diet, to the model including 2 features.</p>
+</div>
+<div id="adding-predictors" class="section level2">
+<h2>Adding Predictors</h2>
+<pre class="r"><code>xp &lt;- cbind(trainx$Time, 
+            trainx$weight_1U_ago, trainx$diff_1U, 
+            trainx$weight_2U_ago, trainx$diff_2U,
+            trainx$Diet)</code></pre>
+<pre class="r"><code>e_lmp &lt;- lm(log(yx) ~ xp,
+  data=trainx)</code></pre>
+<pre class="r"><code>trainx$pred_exp_p &lt;- predict(e_lmp)
+trainx$pred_exp_pw &lt;- exp(trainx$pred_exp_p)</code></pre>
+<pre class="r"><code>exp_error &lt;- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(trainx, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$pred_exp_pw)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = round(sqrt(s_sq_d), 2)
+  exp_error = rbind(exp_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=round(rmse/round(mean(tr_temp$weight), 2), 2)))
+}
+exp_error</code></pre>
+<pre><code>##    fold Time Error N_Error
+## 1     2    4   NaN     NaN
+## 2     3    6  5.10    0.07
+## 3     4    8  3.98    0.04
+## 4     5   10  7.00    0.07
+## 5     6   12  9.17    0.07
+## 6     7   14 12.25    0.09
+## 7     8   16 11.88    0.07
+## 8     9   18 22.51    0.12
+## 9    10   20 30.71    0.15
+## 10   11   21 23.81    0.11</code></pre>
+<p>Total error for model:</p>
+<pre class="r"><code>rmse_expx_p &lt;- mean(exp_error$Error, na.rm = TRUE)</code></pre>
+<p>Total normalised error for model:</p>
+<pre class="r"><code>rmse_expx_p_N &lt;- rmse_expx_p/mean(trainx$weight)</code></pre>
+<div id="compare-1" class="section level3">
+<h3>Compare</h3>
+<pre class="r"><code>data.frame(Model=c(&quot;exp+2f&quot;, &quot;exp+2f+1p&quot;), 
+           RMSE=c(rmse_expxx, rmse_expx_p),
+           &quot;Normalised RMSE&quot;=c(rmse_expxx_N, rmse_expx_p_N))</code></pre>
+<pre><code>##       Model     RMSE Normalised.RMSE
+## 1    exp+2f 14.94137      0.10141992
+## 2 exp+2f+1p 14.04556      0.09533924</code></pre>
+<p>The RMSE diminisged slightly, indicating a better predictive power.</p>
+</div>
+</div>
+</div>
+<div id="test-set" class="section level1">
+<h1>Test Set</h1>
+<p>Testing on “unseen” data gives an indication of the bias of the model, i.e., how much it overfits the training data.</p>
+<pre class="r"><code>testx &lt;- as.data.frame(test) %&gt;%
+  group_by(Chick) %&gt;%
+  mutate(weight_2U_ago=lag(weight, 2),
+         diff_2U=weight-weight_2U_ago) %&gt;%
+  filter(!is.na(diff_2U))</code></pre>
+<pre class="r"><code>yx &lt;- testx$weight
+xp &lt;- cbind(testx$Time, testx$weight_1U_ago, testx$diff_1U, 
+            testx$weight_2U_ago, testx$diff_2U,
+            testx$Diet)</code></pre>
+<pre class="r"><code>e_lmp_test &lt;- lm(log(yx) ~ xp,
+  data=testx)</code></pre>
+<pre class="r"><code>testx$pred_exp_p &lt;- predict(e_lmp_test)
+testx$pred_exp_pw &lt;- exp(testx$pred_exp_p)</code></pre>
+<pre class="r"><code>exp_error &lt;- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(testx, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$pred_exp_pw)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = round(sqrt(s_sq_d), 2)
+  exp_error = rbind(exp_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=round(rmse/round(mean(tr_temp$weight), 2), 2)))
+}
+exp_error</code></pre>
+<pre><code>##    fold Time Error N_Error
+## 1     2    4   NaN     NaN
+## 2     3    6  6.08    0.08
+## 3     4    8  5.47    0.06
+## 4     5   10  8.58    0.08
+## 5     6   12 10.35    0.08
+## 6     7   14 10.62    0.07
+## 7     8   16 10.51    0.06
+## 8     9   18 16.84    0.09
+## 9    10   20 31.79    0.16
+## 10   11   21 32.11    0.15</code></pre>
+<p>Total error for baseline model:</p>
+<pre class="r"><code>rmse_expx_p_test &lt;- mean(exp_error$Error, na.rm = TRUE)</code></pre>
+<p>Total normalised error for exponential model:</p>
+<pre class="r"><code>rmse_expx_p_N_test &lt;- rmse_expx_p_test/mean(trainx$weight)</code></pre>
+<div id="compare-2" class="section level2">
+<h2>Compare</h2>
+<pre class="r"><code>data.frame(Model=c(&quot;exp+2f+1p (train)&quot;, &quot;test&quot;), 
+           RMSE=c(rmse_expx_p, rmse_expx_p_test),
+           &quot;Normalised RMSE&quot;=c(rmse_expx_p_N, rmse_expx_p_N_test))</code></pre>
+<pre><code>##               Model     RMSE Normalised.RMSE
+## 1 exp+2f+1p (train) 14.04556      0.09533924
+## 2              test 14.70556      0.09981923</code></pre>
+<p>The test RMSE seems acceptable.</p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
