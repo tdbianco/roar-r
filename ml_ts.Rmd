@@ -1,0 +1,414 @@
+---
+title: "Supervised Learning on Time-Series Data"
+---
+
+# Introduction
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+The following code applies to the ChickWeight Dataset, were we have a recording of each chick's weight for a number of consecutive weeks (Time). Also, the chicks had 4 types of diet, recorded as a categorical variable. Our official aim is to apply a reliable method to predict the weight gain in new chicks in future studies. The unofficial (real) aim is to start understanding how feature selection and model training work. 
+
+Note: I adapted this script from the (considerably more complex) articles: https://towardsdatascience.com/time-series-machine-learning-regression-framework-9ea33929009a 
+https://hugobowne.github.io/machine-learning-r/03-Supervised-Learning-I/index.html
+
+```{r}
+data("ChickWeight")
+summary(ChickWeight)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+ChickWeight %>%
+  ggplot() +
+  geom_path(aes(x=Time, y=weight, col=Chick), show.legend = F) +
+  facet_wrap(~Diet) +
+  labs(subtitle = "Diet",
+       caption = "Each line is an individual chick.")
+```
+# Supervised Learning
+
+## Feature Engineering
+
+One way of improving prediction is provide features to describe the time-series. For example, we can add a "lag" variable corresponding to the weight 1 week previously. We can add more than 1 lag (weight 2 weeks before, 3 weeks before...). Let's start with 1 lag. 
+
+```{r}
+cw_ml <- as.data.frame(ChickWeight) %>%
+  group_by(Chick) %>%
+  mutate(weight_1U_ago=lag(weight, 1),
+         diff_1U=weight-weight_1U_ago) %>%
+  filter(!is.na(weight_1U_ago))
+head(cw_ml)
+```
+
+## Create train and test set
+
+We save one portion of the data (the test set) for later, to validate our analysis. 
+
+```{r}
+library(caret)
+chicks <- unique(cw_ml$Chick)
+## 75% of the sample size
+smp_size <- floor(0.75 * length(chicks))
+
+## set the seed to make your partition reproducible
+set.seed(88)
+train_chicks <- sample(seq_len(length(chicks)), size = smp_size)
+
+train <- subset(cw_ml, Chick %in% train_chicks)
+library(Hmisc)
+# "A" %nin% "B"
+test <- subset(cw_ml, Chick %nin% train_chicks)
+```
+
+## Build a Baseline Model
+
+We need a baseline model to start off and compare to when we calculate the error metrics. I don't know much of chicks weight, so I'll take the assumption (a bit stretchy) that weight does not change across time. 
+
+```{r}
+# Build baseline model
+train_pred <- train %>%
+  group_by(Chick) %>%
+  mutate(pred_bas=head(weight_1U_ago, 1))
+head(train_pred)
+```
+
+Now we have to evaluate how the baseline model perform, in terms of RMSE, through cross-validation. We can consider each unit of Time as a fold. 
+
+```{r}
+t <- unique(train_pred$Time)
+bas_error <- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(train_pred, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$pred_bas)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = round(sqrt(s_sq_d), 2)
+  bas_error = rbind(bas_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=round(rmse/round(mean(tr_temp$weight), 2), 2)))
+}
+bas_error
+```
+Total error for baseline model:
+
+```{r}
+rmse_bas <- mean(bas_error$Error)
+rmse_bas
+```
+
+Total normalised error for baseline model:
+
+```{r}
+rmse_bas_n <- mean(bas_error$Error)/mean(train_pred$weight)
+rmse_bas_n
+```
+
+The error gets bigger and bigger, because clearly this assumption does not fit the data. 
+We can choose to improve the baseline model with various estimator, for example, we may use linear regression or random forest. In this case, we go for exponential regression. 
+
+## Exponential Regression
+
+We select the variables:
+
+```{r}
+y <- train$weight
+x <- cbind(train$Time, train$weight_1U_ago, train$diff_1U)
+```
+
+And run the model on the train set:
+
+```{r}
+e_lm1 <- lm(log(y) ~ x,
+  data=train)
+```
+
+We calculate the predicted values based on this model:
+
+```{r}
+train_pred$predx <- predict(e_lm1)
+train_pred$predx_w <- exp(train_pred$predx)
+```
+
+And estimate the error:
+
+```{r}
+exp_error <- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(train_pred, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$predx_w)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = round(sqrt(s_sq_d), 2)
+  exp_error = rbind(exp_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=round(rmse/round(mean(tr_temp$weight), 2), 2)))
+}
+exp_error
+```
+Total error for baseline model:
+
+```{r}
+rmse_expx <- mean(exp_error$Error)
+```
+
+Total normalised error for exponential model:
+
+```{r}
+rmse_expx_N <- mean(exp_error$Error)/mean(train_pred$weight)
+```
+
+### Addind more features 
+
+The model may be further improved by adding more lag features to the dataset. Of course, adding more and more features determine a loss of data, so there is a limit that is reached when the number of features exceeds the fit to the data. 
+
+Adding a 2nd feature: 
+
+```{r}
+trainx <- as.data.frame(train) %>%
+  group_by(Chick) %>%
+  mutate(weight_2U_ago=lag(weight, 2),
+         diff_2U=weight-weight_2U_ago) %>%
+  filter(!is.na(diff_2U))
+```
+
+```{r}
+yx <- trainx$weight
+xx <- cbind(trainx$Time, trainx$weight_1U_ago, trainx$diff_1U, 
+            trainx$weight_2U_ago, trainx$diff_2U)
+```
+
+```{r}
+e_lm2 <- lm(log(yx) ~ xx,
+  data=trainx)
+```
+
+```{r}
+trainx$pred <- predict(e_lm2)
+trainx$pred_w <- exp(trainx$pred)
+```
+```{r}
+exp_error <- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(trainx, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$pred_w)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = (sqrt(s_sq_d))
+  exp_error = rbind(exp_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=(rmse/(mean(tr_temp$weight)))))
+}
+exp_error
+```
+
+Total error for baseline model:
+
+```{r}
+rmse_expxx <- mean(exp_error$Error, na.rm = TRUE)
+```
+
+Total normalised error for exponential model:
+
+```{r}
+rmse_expxx_N <- mean(exp_error$Error, na.rm = TRUE)/mean(trainx$weight)
+```
+
+### Adding more features/2
+
+Adding a 3rd feature:
+
+```{r}
+trainxx <- as.data.frame(trainx) %>%
+  group_by(Chick) %>%
+  mutate(weight_3U_ago=lag(weight, 3),
+         diff_3U=weight-weight_3U_ago) %>%
+  filter(!is.na(diff_3U))
+```
+
+```{r}
+yxx <- trainxx$weight
+xxx <- cbind(trainxx$Time, trainxx$weight_1U_ago, trainxx$diff_1U, 
+            trainxx$weight_2U_ago, trainxx$diff_2U, 
+            trainxx$weight_3U_ago, trainxx$diff_3U)
+```
+
+```{r}
+e_lm3 <- lm(log(yxx) ~ xxx,
+  data=trainxx)
+```
+
+```{r}
+trainxx$pred <- predict(e_lm3)
+trainxx$pred_w <- exp(trainxx$pred)
+```
+```{r}
+exp_error <- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(trainxx, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$pred_w)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = (sqrt(s_sq_d))
+  exp_error = rbind(exp_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=(rmse/(mean(tr_temp$weight)))))
+}
+exp_error
+```
+
+Total error for baseline model:
+
+```{r}
+rmse_expxxx <- mean(exp_error$Error, na.rm = TRUE)
+```
+
+Total normalised error for exponential model:
+
+```{r}
+rmse_expxxx_N <- mean(exp_error$Error, na.rm = TRUE)/mean(trainx$weight)
+```
+
+## Compare
+
+```{r}
+data.frame(Model=c("baseline", "exp+1f", "exp+2f", "exp+3f"), 
+           RMSE=c(rmse_bas, rmse_expx, rmse_expxx, rmse_expxxx),
+           "Normalised RMSE"=c(rmse_bas_n, rmse_expx_N, rmse_expxx_N, rmse_expxxx_N))
+```
+ 
+The RMSE gets smaller by adding 1-2 features, but starts to grow again when we add 3 features, meaning we are exceeding the fit to the data. 
+We will then test adding a categorical predictor, diet, to the model including 2 features. 
+
+## Adding Predictors
+
+```{r}
+xp <- cbind(trainx$Time, 
+            trainx$weight_1U_ago, trainx$diff_1U, 
+            trainx$weight_2U_ago, trainx$diff_2U,
+            trainx$Diet)
+```
+
+```{r}
+e_lmp <- lm(log(yx) ~ xp,
+  data=trainx)
+```
+
+```{r}
+trainx$pred_exp_p <- predict(e_lmp)
+trainx$pred_exp_pw <- exp(trainx$pred_exp_p)
+```
+
+```{r}
+exp_error <- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(trainx, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$pred_exp_pw)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = round(sqrt(s_sq_d), 2)
+  exp_error = rbind(exp_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=round(rmse/round(mean(tr_temp$weight), 2), 2)))
+}
+exp_error
+```
+
+Total error for model:
+
+```{r}
+rmse_expx_p <- mean(exp_error$Error, na.rm = TRUE)
+```
+
+Total normalised error for model:
+
+```{r}
+rmse_expx_p_N <- rmse_expx_p/mean(trainx$weight)
+```
+
+### Compare
+
+```{r}
+data.frame(Model=c("exp+2f", "exp+2f+1p"), 
+           RMSE=c(rmse_expxx, rmse_expx_p),
+           "Normalised RMSE"=c(rmse_expxx_N, rmse_expx_p_N))
+```
+The RMSE diminisged slightly, indicating a better predictive power. 
+
+# Test Set
+
+Testing on "unseen" data gives an indication of the bias of the model, i.e., how much it overfits the training data. 
+
+```{r}
+testx <- as.data.frame(test) %>%
+  group_by(Chick) %>%
+  mutate(weight_2U_ago=lag(weight, 2),
+         diff_2U=weight-weight_2U_ago) %>%
+  filter(!is.na(diff_2U))
+```
+
+```{r}
+yx <- testx$weight
+xp <- cbind(testx$Time, testx$weight_1U_ago, testx$diff_1U, 
+            testx$weight_2U_ago, testx$diff_2U,
+            testx$Diet)
+```
+
+```{r}
+e_lmp_test <- lm(log(yx) ~ xp,
+  data=testx)
+```
+
+```{r}
+testx$pred_exp_p <- predict(e_lmp_test)
+testx$pred_exp_pw <- exp(testx$pred_exp_p)
+```
+```{r}
+exp_error <- data.frame()
+for (i in 2:length(t)) {
+  tr_temp = subset(testx, Time==t[i])
+  n = nrow(tr_temp)
+  sq_d = (tr_temp$weight-tr_temp$pred_exp_pw)^2
+  s_sq_d = sum(sq_d)/n
+  rmse = round(sqrt(s_sq_d), 2)
+  exp_error = rbind(exp_error, 
+                    cbind(fold=i, 
+                          Time=t[i], 
+                          Error=rmse, 
+                          N_Error=round(rmse/round(mean(tr_temp$weight), 2), 2)))
+}
+exp_error
+```
+Total error for baseline model:
+
+```{r}
+rmse_expx_p_test <- mean(exp_error$Error, na.rm = TRUE)
+```
+
+Total normalised error for exponential model:
+
+```{r}
+rmse_expx_p_N_test <- rmse_expx_p_test/mean(trainx$weight)
+```
+
+## Compare
+
+```{r}
+data.frame(Model=c("exp+2f+1p (train)", "test"), 
+           RMSE=c(rmse_expx_p, rmse_expx_p_test),
+           "Normalised RMSE"=c(rmse_expx_p_N, rmse_expx_p_N_test))
+```
+
+The test RMSE seems acceptable. 

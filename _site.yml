@@ -27,6 +27,10 @@ navbar:
         href: lmm-het-var.html
       - text: "Reporting of Results"
         href: result-report.html
+  - text: "ML"
+    menu:
+      - text: "ML"
+      - href: ml_ts.html
 output:
   html_document:
     theme: cosmo
