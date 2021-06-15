@@ -5,17 +5,13 @@ navbar:
   left:
   - text: "Home"
     href: index.html
-  - text: "Blog"
-    href: blog.html
   - text: "Exploring your data"
     menu:
-      - text: "Matching Subsamples"
-        href: "propensity-scores.html"
       - text: "Modelling multi-site data"
         href: "geo-info.html"
   - text: "Anova"
     href: anova.html
-  - text: "LM"
+  - text: "Linear Models"
     menu: 
       - text: "Assumptions"    
         href: "lm-assumptions.html"
@@ -29,7 +25,7 @@ navbar:
         href: lmm-het-var.html
       - text: "Reporting of Results"
         href: result-report.html
-  - text: "ML"
+  - text: "Machine Learning"
     menu:
       - text: "Supervised Learning with Time Series for Beginners"
         href: ml_ts.html

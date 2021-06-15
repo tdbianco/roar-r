@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Mixed Modelling with Heterogeneous Variance</title>
+
+<script src="site_libs/header-attrs-2.8/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Hear me ROAR-R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Exploring your data
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="geo-info.html">Modelling multi-site data</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="anova.html">Anova</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Linear Models
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lm-assumptions.html">Assumptions</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LMM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lmm-essential-tutorial.html">Essential Tutorial</a>
+    </li>
+    <li>
+      <a href="lmm-contrasts-tutorial.html">Customising Contrasts</a>
+    </li>
+    <li>
+      <a href="lmm-het-var.html">Modelling Heterogeneus Variance</a>
+    </li>
+    <li>
+      <a href="result-report.html">Reporting of Results</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Machine Learning
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="ml_ts.html">Supervised Learning with Time Series for Beginners</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Mixed Modelling with Heterogeneous Variance</h1>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#example-data">Example data</a>
+<ul>
+<li><a href="#add-a-categorical-variable">Add a categorical variable</a></li>
+</ul></li>
+<li><a href="#variance-homogeneity-model">Variance homogeneity model</a></li>
+<li><a href="#variance-heterogeneity-model-in-between-subject-residuals">Variance heterogeneity model in between-subject residuals</a></li>
+<li><a href="#variance-heterogeneity-model-in-between--and-within-subject-residuals">Variance heterogeneity model in between- and within-subject residuals</a></li>
+</ul>
+</div>
+
+<pre class="r"><code>library(dplyr)
+library(ggplot2)
+library(lme4)
+library(nlme)</code></pre>
+<p>Here we present the implementation of mixed modelling with heterogenous variance components. Normally, we assume that the variance is equally distributed across stimuli, participants, timepoints… Sometimes, variance may systematically vary between conditions, and it might be useful to model this explicitly. One example might be measures taken in time after a certain event (eg, taking a drug) across a wide span: observations closer in time to the event might be more similar between each other, with variance dropping while the drug takes its effect. However, with time, the effect of the drug tend to disappear and variance may increase again. So heterogeneous variance is like an hypothesis and needs to be verified with model selection.</p>
+<div id="example-data" class="section level1">
+<h1>Example data</h1>
+<pre class="r"><code>data &lt;- sleepstudy
+head(data)</code></pre>
+<pre><code>##   Reaction Days Subject lunch
+## 1 249.5600    0     308     0
+## 2 258.7047    1     308     0
+## 3 250.8006    2     308     1
+## 4 321.4398    3     308     0
+## 5 356.8519    4     308     0
+## 6 414.6901    5     308     1</code></pre>
+<div id="add-a-categorical-variable" class="section level2">
+<h2>Add a categorical variable</h2>
+<pre class="r"><code>set.seed(88)
+
+sg &lt;- data.frame()
+sb &lt;- unique(data$Subject)
+
+for (i in 1:length(sb)) {
+  g = sample(LETTERS[c(6,13)], size = 1)
+  sg = rbind(sg, cbind(Subject=paste(sb[i]), G=g))
+}
+
+head(sg)</code></pre>
+<pre><code>##   Subject G
+## 1     308 F
+## 2     309 F
+## 3     310 M
+## 4     330 F
+## 5     331 F
+## 6     332 M</code></pre>
+<pre class="r"><code>data_2 &lt;- inner_join(data, sg, by=&quot;Subject&quot;)
+head(data_2)</code></pre>
+<pre><code>##   Reaction Days Subject lunch G
+## 1 249.5600    0     308     0 F
+## 2 258.7047    1     308     0 F
+## 3 250.8006    2     308     1 F
+## 4 321.4398    3     308     0 F
+## 5 356.8519    4     308     0 F
+## 6 414.6901    5     308     1 F</code></pre>
+<p>Is variance different in the two groups?</p>
+<pre class="r"><code>data_2 %&gt;%
+  ggplot(aes(y=Reaction, x=Days, group=Subject)) +
+  geom_path() +
+  labs(caption=&quot;No evidence of heterogeneous variance&quot;)</code></pre>
+<p><img src="lmm-het-var_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>data_2 %&gt;%
+  ggplot(aes(y=Reaction, x=Days, group=Subject, color=G)) +
+  geom_path() +
+  labs(caption=&quot;Or maybe yes?&quot;)</code></pre>
+<p><img src="lmm-het-var_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>it looks like group F have more outliers but more consistent variation, while group M have a slightly bigger variance (more spread out).</p>
+</div>
+</div>
+<div id="variance-homogeneity-model" class="section level1">
+<h1>Variance homogeneity model</h1>
+<p>This model assumes common variance between and within person, irrespective of the variable G. This is the default model fit by lme with the standard specification of the ranom effect with 1 grouping variable:</p>
+<pre class="r"><code># Common models for between and within person variance
+model.01 = lme(fixed = Reaction ~ 1,  
+               random = ~ 1 | Subject,
+                       data = data_2,
+                   method = &#39;REML&#39;)
+summary(model.01)</code></pre>
+<pre><code>## Linear mixed-effects model fit by REML
+##   Data: data_2 
+##        AIC      BIC    logLik
+##   1910.327 1919.889 -952.1633
+## 
+## Random effects:
+##  Formula: ~1 | Subject
+##         (Intercept) Residual
+## StdDev:    35.75385 44.25907
+## 
+## Fixed effects:  Reaction ~ 1 
+##                Value Std.Error  DF  t-value p-value
+## (Intercept) 298.5079  9.049936 162 32.98453       0
+## 
+## Standardized Within-Group Residuals:
+##        Min         Q1        Med         Q3        Max 
+## -2.4983313 -0.5501348 -0.1475698  0.5122894  3.3445880 
+## 
+## Number of Observations: 180
+## Number of Groups: 18</code></pre>
+<pre class="r"><code>VarCorr(model.01)[1]</code></pre>
+<pre><code>## [1] &quot;1278.338&quot;</code></pre>
+<p>1278.338 is the common variance across the 2 groups attributable to between-persons differences. This, summed to the residual variance 1958.865, gives the total variance.</p>
+<p>By extracting the Variance-Covariance Matrix, we may visualise the total variance on the diagonal, and the common covariance off-diagonal.</p>
+<pre class="r"><code>getVarCov(model.01,type=&quot;marginal&quot;) </code></pre>
+<pre><code>## Subject 308 
+## Marginal variance covariance matrix
+##         1      2      3      4      5      6      7      8      9
+## 1  3237.2 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3
+## 2  1278.3 3237.2 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3
+## 3  1278.3 1278.3 3237.2 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3
+## 4  1278.3 1278.3 1278.3 3237.2 1278.3 1278.3 1278.3 1278.3 1278.3
+## 5  1278.3 1278.3 1278.3 1278.3 3237.2 1278.3 1278.3 1278.3 1278.3
+## 6  1278.3 1278.3 1278.3 1278.3 1278.3 3237.2 1278.3 1278.3 1278.3
+## 7  1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 3237.2 1278.3 1278.3
+## 8  1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 3237.2 1278.3
+## 9  1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 3237.2
+## 10 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3
+##        10
+## 1  1278.3
+## 2  1278.3
+## 3  1278.3
+## 4  1278.3
+## 5  1278.3
+## 6  1278.3
+## 7  1278.3
+## 8  1278.3
+## 9  1278.3
+## 10 3237.2
+##   Standard Deviations: 56.896 56.896 56.896 56.896 56.896 56.896 56.896 56.896 56.896 56.896</code></pre>
+<p>The Variance-Covariance structure is the same for all subjects:</p>
+<pre class="r"><code>getVarCov(model.01,type=&quot;marginal&quot;,individuals = 15) </code></pre>
+<pre><code>## Subject 369 
+## Marginal variance covariance matrix
+##         1      2      3      4      5      6      7      8      9
+## 1  3237.2 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3
+## 2  1278.3 3237.2 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3
+## 3  1278.3 1278.3 3237.2 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3
+## 4  1278.3 1278.3 1278.3 3237.2 1278.3 1278.3 1278.3 1278.3 1278.3
+## 5  1278.3 1278.3 1278.3 1278.3 3237.2 1278.3 1278.3 1278.3 1278.3
+## 6  1278.3 1278.3 1278.3 1278.3 1278.3 3237.2 1278.3 1278.3 1278.3
+## 7  1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 3237.2 1278.3 1278.3
+## 8  1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 3237.2 1278.3
+## 9  1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 3237.2
+## 10 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3 1278.3
+##        10
+## 1  1278.3
+## 2  1278.3
+## 3  1278.3
+## 4  1278.3
+## 5  1278.3
+## 6  1278.3
+## 7  1278.3
+## 8  1278.3
+## 9  1278.3
+## 10 3237.2
+##   Standard Deviations: 56.896 56.896 56.896 56.896 56.896 56.896 56.896 56.896 56.896 56.896</code></pre>
+<p>The variance attributed to subject is a measure of the intra-class correlation and can be converted to a correlation coefficient when divided by the total variance (in this case, ICC = 1959.865)</p>
+<p>This kind of variance structure is also termed “compound symmetry”. The model assigns this structure by default, however, this can be explicitly specified in the random effect:</p>
+<pre class="r"><code>model.02 = lme(fixed = Reaction ~ 1,  
+               random = list(Subject = pdSymm(form = ~ 1)),
+                       data = data_2,
+                   method = &#39;REML&#39;)</code></pre>
+<p>This gives exactly the same result with between-subject Variance = <code>rVarCorr(model.01)[1]</code>. pdSymm creates a positive-definite Symmetric matrix:</p>
+<pre class="r"><code>pdSymm(diag(rep(x = 1, times = 3)), nam = c(&quot;A&quot;,&quot;B&quot;,&quot;C&quot;))</code></pre>
+<pre><code>## Positive definite matrix structure of class pdSymm representing
+##   A B C
+## A 1 0 0
+## B 0 1 0
+## C 0 0 1</code></pre>
+</div>
+<div id="variance-heterogeneity-model-in-between-subject-residuals" class="section level1">
+<h1>Variance heterogeneity model in between-subject residuals</h1>
+<p>We specify a positive-definite diagonal matrix, meaning that variance changes with group between subjects, but it is common within subject (which makes sense since these people are either males or females but not both…)</p>
+<pre class="r"><code>model.01b = lme(fixed = Reaction ~ 1,  
+                random = list(Subject = pdDiag(form = ~ factor(G))),
+                        data = data_2,
+                method = &#39;REML&#39;)
+summary(model.01b)</code></pre>
+<pre><code>## Linear mixed-effects model fit by REML
+##   Data: data_2 
+##        AIC      BIC    logLik
+##   1912.203 1924.953 -952.1016
+## 
+## Random effects:
+##  Formula: ~factor(G) | Subject
+##  Structure: Diagonal
+##         (Intercept) factor(G)M Residual
+## StdDev:    33.69998   19.09395 44.25907
+## 
+## Fixed effects:  Reaction ~ 1 
+##                Value Std.Error  DF  t-value p-value
+## (Intercept) 297.9522  8.984658 162 33.16233       0
+## 
+## Standardized Within-Group Residuals:
+##        Min         Q1        Med         Q3        Max 
+## -2.4839689 -0.5531604 -0.1335073  0.5225600  3.3425834 
+## 
+## Number of Observations: 180
+## Number of Groups: 18</code></pre>
+<p>Here we have a differential term of Variance for G = M (the other level is taken as threshold).</p>
+<pre class="r"><code>VarCorr(model.01b)</code></pre>
+<pre><code>## Subject = pdDiag(factor(G)) 
+##             Variance  StdDev  
+## (Intercept) 1135.6884 33.69998
+## factor(G)M   364.5791 19.09395
+## Residual    1958.8652 44.25907</code></pre>
+<p>Let’s check the Variance-Covariance Matrix of 2 subjects pertaining to different groups; here are subject 308 (F), and 310 (M):</p>
+<pre class="r"><code>getVarCov(model.01b, type=&quot;marginal&quot;, individuals = c(1,3)) </code></pre>
+<pre><code>## Subject 308 
+## Marginal variance covariance matrix
+##         1      2      3      4      5      6      7      8      9
+## 1  3094.6 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7
+## 2  1135.7 3094.6 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7
+## 3  1135.7 1135.7 3094.6 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7
+## 4  1135.7 1135.7 1135.7 3094.6 1135.7 1135.7 1135.7 1135.7 1135.7
+## 5  1135.7 1135.7 1135.7 1135.7 3094.6 1135.7 1135.7 1135.7 1135.7
+## 6  1135.7 1135.7 1135.7 1135.7 1135.7 3094.6 1135.7 1135.7 1135.7
+## 7  1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 3094.6 1135.7 1135.7
+## 8  1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 3094.6 1135.7
+## 9  1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 3094.6
+## 10 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7 1135.7
+##        10
+## 1  1135.7
+## 2  1135.7
+## 3  1135.7
+## 4  1135.7
+## 5  1135.7
+## 6  1135.7
+## 7  1135.7
+## 8  1135.7
+## 9  1135.7
+## 10 3094.6
+##   Standard Deviations: 55.629 55.629 55.629 55.629 55.629 55.629 55.629 55.629 55.629 55.629 
+## Subject 310 
+## Marginal variance covariance matrix
+##         1      2      3      4      5      6      7      8      9
+## 1  3459.1 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3
+## 2  1500.3 3459.1 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3
+## 3  1500.3 1500.3 3459.1 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3
+## 4  1500.3 1500.3 1500.3 3459.1 1500.3 1500.3 1500.3 1500.3 1500.3
+## 5  1500.3 1500.3 1500.3 1500.3 3459.1 1500.3 1500.3 1500.3 1500.3
+## 6  1500.3 1500.3 1500.3 1500.3 1500.3 3459.1 1500.3 1500.3 1500.3
+## 7  1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 3459.1 1500.3 1500.3
+## 8  1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 3459.1 1500.3
+## 9  1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 3459.1
+## 10 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3 1500.3
+##        10
+## 1  1500.3
+## 2  1500.3
+## 3  1500.3
+## 4  1500.3
+## 5  1500.3
+## 6  1500.3
+## 7  1500.3
+## 8  1500.3
+## 9  1500.3
+## 10 3459.1
+##   Standard Deviations: 58.814 58.814 58.814 58.814 58.814 58.814 58.814 58.814 58.814 58.814</code></pre>
+<p>The diagonal total variance and off-diagonal covariance change with G by a factor of 364.5791.</p>
+</div>
+<div id="variance-heterogeneity-model-in-between--and-within-subject-residuals" class="section level1">
+<h1>Variance heterogeneity model in between- and within-subject residuals</h1>
+<p>Since this is a longitudinal design, variances may also change within subject. This may happen, for example, when observations that are closer in time are more similar to each other than observations occurring at a later time point. In this case, we capitalise on the between and within subject variability across multiple time points, and we assign a weight depending on the time of observation:</p>
+<pre class="r"><code>model.01c = lme(fixed = Reaction ~ 1,  
+                random = list(Subject = pdSymm(form = ~ 1)),
+                weights = varIdent(form = ~ 1 | factor(Days)),
+                        data = data_2,
+                    method = &#39;REML&#39;)
+summary(model.01c)</code></pre>
+<pre><code>## Linear mixed-effects model fit by REML
+##   Data: data_2 
+##        AIC      BIC   logLik
+##   1872.486 1910.735 -924.243
+## 
+## Random effects:
+##  Formula: ~1 | Subject
+##         (Intercept) Residual
+## StdDev:    36.34266 44.26675
+## 
+## Variance function:
+##  Structure: Different standard deviations per stratum
+##  Formula: ~1 | factor(Days) 
+##  Parameter estimates:
+##         0         1         2         3         4         5 
+## 1.0000000 0.7430690 0.6639201 0.2702922 0.3127369 0.8492301 
+##         6         7         8         9 
+## 1.1462055 1.0878625 1.4884096 1.8360810 
+## Fixed effects:  Reaction ~ 1 
+##                Value Std.Error  DF  t-value p-value
+## (Intercept) 285.7469  8.758025 162 32.62687       0
+## 
+## Standardized Within-Group Residuals:
+##        Min         Q1        Med         Q3        Max 
+## -2.6435227 -0.4410395  0.1204819  0.7318349  2.9048085 
+## 
+## Number of Observations: 180
+## Number of Groups: 18</code></pre>
+<p>Between-subject variances:</p>
+<pre class="r"><code>VarCorr(model.01c)</code></pre>
+<pre><code>## Subject = pdSymm(1) 
+##             Variance StdDev  
+## (Intercept) 1320.789 36.34266
+## Residual    1959.546 44.26675</code></pre>
+<p>1320.789 is the between-subject variation. However, there is also a variation within the same subject now, on the diagonal:</p>
+<pre class="r"><code>getVarCov(model.01c, type=&quot;marginal&quot;, individuals = c(1,3)) </code></pre>
+<pre><code>## Subject 308 
+## Marginal variance covariance matrix
+##         1      2      3      4      5      6      7      8      9
+## 1  3280.3 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8
+## 2  1320.8 2402.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8
+## 3  1320.8 1320.8 2184.5 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8
+## 4  1320.8 1320.8 1320.8 1463.9 1320.8 1320.8 1320.8 1320.8 1320.8
+## 5  1320.8 1320.8 1320.8 1320.8 1512.4 1320.8 1320.8 1320.8 1320.8
+## 6  1320.8 1320.8 1320.8 1320.8 1320.8 2734.0 1320.8 1320.8 1320.8
+## 7  1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 3895.2 1320.8 1320.8
+## 8  1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 3639.8 1320.8
+## 9  1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 5661.9
+## 10 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8
+##        10
+## 1  1320.8
+## 2  1320.8
+## 3  1320.8
+## 4  1320.8
+## 5  1320.8
+## 6  1320.8
+## 7  1320.8
+## 8  1320.8
+## 9  1320.8
+## 10 7926.8
+##   Standard Deviations: 57.274 49.018 46.739 38.262 38.89 52.288 62.412 60.331 75.246 89.033 
+## Subject 310 
+## Marginal variance covariance matrix
+##         1      2      3      4      5      6      7      8      9
+## 1  3280.3 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8
+## 2  1320.8 2402.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8
+## 3  1320.8 1320.8 2184.5 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8
+## 4  1320.8 1320.8 1320.8 1463.9 1320.8 1320.8 1320.8 1320.8 1320.8
+## 5  1320.8 1320.8 1320.8 1320.8 1512.4 1320.8 1320.8 1320.8 1320.8
+## 6  1320.8 1320.8 1320.8 1320.8 1320.8 2734.0 1320.8 1320.8 1320.8
+## 7  1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 3895.2 1320.8 1320.8
+## 8  1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 3639.8 1320.8
+## 9  1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 5661.9
+## 10 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8 1320.8
+##        10
+## 1  1320.8
+## 2  1320.8
+## 3  1320.8
+## 4  1320.8
+## 5  1320.8
+## 6  1320.8
+## 7  1320.8
+## 8  1320.8
+## 9  1320.8
+## 10 7926.8
+##   Standard Deviations: 57.274 49.018 46.739 38.262 38.89 52.288 62.412 60.331 75.246 89.033</code></pre>
+<p>And within-subject variances by day (a bit difficult to extract…):</p>
+<pre class="r"><code>wss.v &lt;- function(model) {
+  res.std = summary(model)$sigma #to re-scale the values
+  wts = coef(model$modelStruct$varStruct, unconstrained=FALSE)
+  res.v.g = (res.std*wts)^2
+  res.v = data.frame(res.v.g)
+  colnames(res.v) = &quot;wss&quot;
+  return(res.v)
+}
+
+wss.v(model.01c)</code></pre>
+<pre><code>##         wss
+## 1 1081.9662
+## 2  863.7479
+## 3  143.1602
+## 4  191.6521
+## 5 1413.2083
+## 6 2574.4255
+## 7 2319.0142
+## 8 4341.1048
+## 9 6606.0071</code></pre>
+<p>Variances decrease until the 4th day, then increases again (probably related to correlation between observations close in time).</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
