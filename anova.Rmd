@@ -1,116 +1,142 @@
 ---
-title: "ANOVA - Analysis of Variance"
+title: "Anova - Analysis of Variance"
 ---
-This is based on my notes of the statistics course given by Prof. Brian Dillon (UMass Amherst).
 
-# Anova
+This is based on my notes of the statistics course given by [Prof. Brian Dillon](https://www.umass.edu/linguistics/member/brian-dillon) (UMass Amherst).
 
-Anova is the analysis of variance based on differences among means of more than two samples, by comparing two estimates of population variance. The first estimate comes from the average of the variance on each group, the within-group or residual variance; the residual variance is determined by chance factors, usually unknown, that influence each observation unpredictably. The second type of variance comes from the variation of means of the samples, the between-group estimate of variance, that varies systematically with our factors of interest, such as treatment or condition.
+# Introduction
+
+Anova is the analysis of variance based on differences among means of more than 2 samples, by comparing 2 estimates of population variance.
+
+What are these 2 estimates of the population variance that we compare to each other with this test?
+
+1.  The first estimate comes from the average of the variance on each group, the within-group variance. The within-group variance is determined by chance factors, usually unknown, that influence each observation unpredictably. Every kind of data in the world is affected by chance factor, no matter how precise the measurement!
+2.  The second type of variance comes from the variation of means of the samples, the between-group variance, and it varies systematically with the factors of interest, such as treatment or condition.
+
+The job of this test is to compare the within-group variance (determined by chance) and the between-group variance (determine by a factor of interest that varies between groups). The aim is to determine if the between-group variance exceeds the variance determined by chance, meaning that the variable of interest is more relevant than chance only.
 
 ## T-test is a special case of Anova, and Anova is a special case of Linear Regression
 
-When only two groups are compared, the T-test and the Anova hold the same result. Both examine if the population means differ from one another, assuming equal variances for both. The same assumption extends to linear regression, where the residuals (data with group means subtracted) have to be equivalent. In R, the fuction 'aov' is actually a wrapper of 'lm'! 
+When only 2 groups are compared, the T-test and the Anova hold the same result. Both examine if the population means differ from one another, assuming equal within- and between-group variances for both. The same assumption extends to linear regression, where the residuals (data with group means subtracted) have to be equivalent. In R, the fuction 'aov' is actually a wrapper of 'lm', the function that performs linear regression!
 
-# An example with the Variances
+# The One-way Anova
 
 Let's create a dummy dataset:
 
 ```{r}
-group <- c(rep(1, 10), rep(2, 10), rep(3, 10)) #idv
-response <- round(rnorm(30, mean = 80, sd = 12), digits = 2) #dv
-df <- cbind(group, response) #ds
-df<-data.frame(df) #various steps to format the ds
-names(df)<-c("treatment", "score")
+set.seed(88) #set seed for replicability of randomly generated data
+treatment <- c(rep("a", 10), rep("b", 10), rep("c", 10)) #3 groups: independent variable
+response <- round(rnorm(30, mean = 80, sd = 12), digits = 2) #a normally distributed dependent variable
+#various steps to put IV and DV together in a dataset, and format it
+df <- cbind(treatment, response) #IV and DV in columns
+df<-data.frame(df) 
+names(df)<-c("treatment", "response") #name the columns
 df$treatment<-as.factor(df$treatment)
-head(df)
+df$response<-as.numeric(df$response)
+knitr::kable(head(df)) #preview first 6 rows
 ```
 
-Let's calculate the variances
+Let's calculate two estimates of the within- and between-group variances, the within- and the between-mean square, with the formulas:
+
+1.  Within MS: Within Sum of Squares / N - G
+2.  Between MS: [N Group \* (Group Mean - Grand Mean)\^2] / G -1
 
 ```{r}
-# Root mean squared error for each group
-av.sqrt1<-mean(sqrt1<- with(df, sqrt(score[treatment==1])))
-
-av.sqrt2<-mean(sqrt2<- with(df, sqrt(score[treatment==2])))
-
-av.sqrt3<-mean(sqrt3<- with(df, sqrt(score[treatment==3])))
-
 # Group Means
-m1<-with(df, mean(score[treatment==1]))
-m2<-with(df, mean(score[treatment==2]))
-m3<-with(df, mean(score[treatment==3]))
+m1<-with(df, mean(response[treatment=="a"]))
+m2<-with(df, mean(response[treatment=="b"]))
+m3<-with(df, mean(response[treatment=="c"]))
 
 # Grand Mean
 GM<-(m1+m2+m3)/3
 
-#Variance Within
-Vwith<-(av.sqrt1+av.sqrt2+av.sqrt3)/3
+#Within Sum of Squares and Within MS
+wss <- sum((df$response-GM)^2)
+wms <- wss/(nrow(df)-3)
 
-#Variance Between
-Vbet<-((m1-GM)^2)+((m2-GM)^2)+((m3-GM)^2)/2
+#Between MS
+bms<- (with(df, length(response[treatment=="a"])) * ((m1-GM)^2) + 
+      + with(df, length(response[treatment=="b"])) * (m2-GM)^2 +
+      + with(df, length(response[treatment=="c"])) * (m3-GM)^2) / 3-1
 
-cat("Within Group Variance:", round(Vwith, 2), "\n")
-cat("Between Group Variance:", round(Vbet, 2))
+#Print
+cat("Within Group Variance:", round(wms, 2), "\n")
+cat("Between Group Variance:", round(bms, 2))
 ```
 
-Within the groups, observations vary by a factor of `r Vwith` on average, due to chance factors, such as unsystematic measurement error, idiosynchratic differences between participants and other unknown factors. The average variance between the groups is `r Vbet`: the statistical test will investigate if this variance is attributable to treatment - a factor that systematically varies between the groups. 
+Within the groups, observations vary by a factor of `r round(wms)` on average, due to chance factors, such as unsystematic measurement error, individual differences and other unknown factors.
 
-# Running the ANOVA
+The average variance between the groups is `r round(bms)`: the statistical test will investigate if this variance attributable to treatment - a factor that systematically varies between the groups - is significantly different from the within group variance.
 
-Output of the test: 
+So `r round(bms)` is different from `r round(wms)` , but is that enough?
+
+# Running the Anova
+
+The ANOVA will provide 2 useful statistics, the F Value and the p-value:
 
 ```{r}
-aov<-aov(score~treatment, df)
+aov<-aov(response~treatment, df)
 s.aov<-summary(aov) 
 s.aov
 ```
 
-Means per group (that we calculated manually before), and coefficients of the treatment effect (unstandardised effect size), with standard error:
+We can access further information from this output. For example, the means per group (that we calculated manually before), and the coefficients of the treatment effect (non standardized effect size), with standard error:
 
 ```{r}
-model.tables(aov, "mean", se=TRUE) #means
+m.t.means <- model.tables(aov, "mean", se=TRUE) #means
+m.t.means
 ```
+
+So, the average response with treatment "a" is `r round(m.t.means$tables$treatment[1], 2)` , with "b" it is `r round(m.t.means$tables$treatment[2], 2)` , with "c" it is `r round(m.t.means$tables$treatment[3], 2)`
 
 ```{r}
-model.tables(aov, "effects", se=TRUE) #coefficients
+m.t.eff <- model.tables(aov, "effects", se=TRUE) #coefficients
+m.t.eff
 ```
 
-Let's format the output a bit:
-
-```{r}
-library(broom)
-tidy.summ<-tidy(aov)
-tidy.summ
-```
-
+The coefficients are a measure of the effect of each treatment; they are not standardized, differently from the effect sizes that we will see below, therefore they are on the same scale of the response. We may conclude, that treatment "a" determines a variation of `r round(m.t.eff$tables$treatment[1], 2)` points of the response, and so on. Of course, to interpret that, we need to have more information on the DV - that's when standardized effect sized may become useful (see below).
 
 ## Reporting
 
-The treatment effect `r ifelse(tidy.summ$p.value[1]<0.05, "gave", "did not give")` a statistically significant difference, with `r paste0("F(", tidy.summ$df[1], ",", tidy.summ$df[2], ") = ", ifelse(round(tidy.summ$statistic[1], 2)==0, "< 0.001", round(tidy.summ$statistic[1], 2)), ", p-value = ", ifelse(tidy.summ$p.value[1]<0.001, paste0("p-value < 0.001"), round(tidy.summ$p.value[1], 2)))`
+We can report the output table in a standard table:
 
-# Effect Size
+```{r}
+tidy.summ<-broom::tidy(aov)
+knitr::kable(tidy.summ)
+```
 
-After computing ANOVA, you may calculate the Effect Size, R-Squared, that tells you how much of the variance is due to the treatment effect:
+In the text, we can report that the IV - treatment - `r ifelse(tidy.summ$p.value[1]<0.05, "gave", "did not give")` a statistically significant difference, with `r paste0("F(", tidy.summ$df[1], ",", tidy.summ$df[2], ") = ", ifelse(round(tidy.summ$statistic[1], 2)==0, "< 0.001", round(tidy.summ$statistic[1], 2)), ", p-value = ", ifelse(tidy.summ$p.value[1]<0.001, paste0("p-value < 0.001"), round(tidy.summ$p.value[1], 2)))`
+
+## Effect Size
+
+In case you find a significant effect, it is good practice to report how big/small this effect is. The coefficient, or non standardized effect size, can already give you an idea about that, but it depends on the scale of the dependent variable. It may be useful to report an effect size that is standardized, so it represents the change of the DV due to treatment in percentage.
+
+The standardized effect size can help interpret the reliability of the p-value: if the sample size is small or highly heterogeneous, the p-value may be inflated towards significance, and give a false positive (Type I Error). Both sample size and standard deviation (a measure of heterogeneity) influence the estimate of variance, and may sum to the true effect of the IV. If that is the case, the effect size will be small, warning you that something is off with your conclusion.
+
+The R-Squared is the best way of calculating the effect size for One-way Anova, and tells you how much of the variance is due to the effect of treatment:
 
 ```{r}
 sum_squares_treatment <- tidy.summ$sumsq[1]
-sum_squares_residuals <- tidy.summ$sumsq[2]
+sum_squares_residual <- tidy.summ$sumsq[2]
 
 R_squared <- sum_squares_treatment /
-            (sum_squares_treatment + sum_squares_residuals)
+            (sum_squares_treatment + sum_squares_residual)
 
 R_squared
 ```
 
-The effects size R-Squared is `r paste0(round(R_squared, 2))`. 
+The effects size R-Squared is `r paste0(round(R_squared, 2))`, so of a quite `r ifelse(round(R_squared, 2)>0.8, "big", ifelse(round(R_squared, 2)>0.5 & round(R_squared, 2)<0.5, "average", "small"))` size. If the ANOVA has given a significant treatment effect, we should be quite `r ifelse(round(R_squared, 2)>0.8, "safe", ifelse(round(R_squared, 2)>0.5 & round(R_squared, 2)<0.5, "cautious", "careful"))` in our interpretation.
 
-# Factorial Anova
+# Anova with an Interaction Effect
 
-In a factorial analysis of variance there are two groups (in the below example, type A and B), and a measure that has been acquired in a between subject design. In this case, each subject in each group underwent a different test (y or z). 
+In the factorial analysis of variance above there are 3 groups, and the DV has been recorded in a between-subject design (i.e., the people of the 3 groups are different people). But there are no other variables! What if half of the subjects in each group was tested with a different test (y or z) for ascertaining the treatment effect?
 
-Therefore, in our anova, we are going to consider the main effect of group, the main effect of test and the interaction between the two. 
+If that is the case, it is necessary to take into account that the DV measurement in the different subjects comes from a different method. In statistical terms, it means that there may be an interaction between the IV - treatment/group - and the variable *test*.
+
+Let's generate some data:
 
 ```{r}
+set.seed(88)
 subj1<-rep(1:30)
 group1<-rep("a", 30)
 condition<-rep(c("y", "z"), 15)
@@ -118,91 +144,133 @@ response1<-round(rnorm(30, mean = 15, sd = 0.5), digits = 2)
 
 subj2<-rep(31:60)
 group2<-rep("b", 30)
+condition<-rep(c("y", "z"), 15)
 response2<-round(rnorm(30, mean = 18, sd = 0.7), digits = 2)
+
+subj3<-rep(61:90)
+group3<-rep("c", 30)
+condition<-rep(c("y", "z"), 15)
+response3<-round(rnorm(30, mean = 21, sd = 0.9), digits = 2)
 
 fa_1<-cbind(subj1, group1, condition, response1)
 fa_2<-cbind(subj2, group2, condition, response2)
-fa<-rbind(fa_1, fa_2)
+fa_3<-cbind(subj3, group3, condition, response3)
+
+fa<-rbind(fa_1, fa_2, fa_3)
 fa.df<-as.data.frame(fa)
-colnames(fa.df)<-c("subj", "group", "test", "response")
+colnames(fa.df)<-c("subj", "treatment", "test", "response")
 fa.df$response<-as.character(fa.df$response)
 fa.df$response<-as.numeric(fa.df$response)
-str(fa.df)
+knitr::kable(head(fa.df))
 ```
 
-Output:
+To specify that 2 variables interact with each other, we use the '\*' sign in the formula. In the output, the effect of the interaction reports both effects, separate by ':':
 
 ```{r}
-av<-aov(response ~ group*test, fa.df)
-tidy.summ<-tidy(av)
-
+av<-aov(response ~ treatment*test, fa.df)
+tidy.summ <- broom::tidy(av)
+knitr::kable(tidy.summ)
 ```
 
-And effects sizes:
+According to the ANOVA result, there is a `r ifelse(tidy.summ$p.value[1]<0.05, "significant", "non-significant")` effect of treatment, with `r paste0("F(", tidy.summ$df[1], ",", tidy.summ$df[4], ") = ", ifelse(round(tidy.summ$statistic[1], 2)==0, "0.00", round(tidy.summ$statistic[1], 2)), ifelse(tidy.summ$p.value[1]<0.001, paste0(", p-value < 0.001"), paste0(", p-value = ", round(tidy.summ$p.value[1], 2))))`, and a `r ifelse(tidy.summ$p.value[2]<0.05, "significant", "non-significant")` of test, with `r paste0("F(", tidy.summ$df[2], ",", tidy.summ$df[4], ") = ", ifelse(round(tidy.summ$statistic[2], 2)==0, "0.00", round(tidy.summ$statistic[2], 2)), ifelse(tidy.summ$p.value[2]<0.001, paste0(", p-value < 0.001"), paste0(", p-value = ", round(tidy.summ$p.value[2], 2))))`. But, the interaction between treatment and test is `r ifelse(tidy.summ$p.value[3]<0.05, "significant", "non-significant")` , meaning that the test that was used `r ifelse(tidy.summ$p.value[1]<0.05, "made", "did not make")` a difference when it comes to measuring the dependent variable.
+
+To better understand what interaction means, it is useful to visualize the means in a plot:
+
+```{r}
+with(fa.df, interaction.plot(treatment, test, response))
+```
+
+From this plot, it looks like the treatment effect is slightly overestimated in treatment A when measured with test y. However, the effect is reversed for treatment b, test y slightly underestimated it. For treatment c, the two tests seems to give the same result. Of course, if there is a systematic change of the dependent variable depending on an external factor, we need to know! That's why interaction effects can be that important.
+
+The same considerations about effects sizes also apply to interaction effects; in this case, we may calculate the ratio between the variance (the sum of squares in the output) explained by the treatment/test/treatment\*test, and the total variance, termed eta-squared:
 
 ```{r}
 ssq<-tidy.summ$sumsq
-dof<-tidy.summ$df
-dof_res<-tidy.summ$df[4]
 
-ES1<-(ssq[1]*dof[1])/(ssq[1]+dof[1]+dof_res)
-ES2<-(ssq[2]*dof[2])/(ssq[2]+dof[2]+dof_res)
-ES3<-(ssq[3]*dof[3])/(ssq[3]+dof[3]+dof_res)
+ES1<-ssq[1]/(ssq[1]+ssq[2]+ssq[3])
+ES2<-ssq[2]/(ssq[1]+ssq[2]+ssq[3])
+ES3<-ssq[3]/(ssq[1]+ssq[2]+ssq[3])
 
-cat("ES of group:", ifelse(ES1<0.001, "< 0.001", round(ES1, 2)), "\n")
-cat("ES of test:", ifelse(ES2<0.009, "< 0.001", round(ES2, 2)), "\n")
-cat("ES of interaction:", ifelse(ES3<0.009, "< 0.001", round(ES3, 2)), "\n")
+cat("eta-squared of treatment:", round(ES1, 3), "\n")
+cat("eta-squared of test:", round(ES2, 3), "\n")
+cat("eta-squared of interaction:", round(ES3, 3), "\n")
 ```
 
-# Repeated measures ANOVA
+The effect size of treatment accounts for `r paste0(round(ES1, 3)*100, "%")` of the variance of the DV. The effect size of test accounts for `r paste0(round(ES2, 4)*100, "%")` of the variance of the DV. The effect size of interaction accounts for `r paste0(round(ES3, 3)*100, "%")` of the variance of the DV. In this case, our interpretation is in relative terms; in this case, the effect of treatment seems to only be marginally influenced by test, although the interaction is significant.
 
-One of the assumptions of ANOVA is that the groups of which we are examining the means are independent. In other words, they do not have to be correlated, as it happens when you measure the same things on the same group of individuals. Broadly speaking, the errors will be smaller because measurements come from the same people, and this could significantly misallign your result. Look at our residual in the previous ANOVA: it's approximately `r round(ssq[4])` but it might be bigger if we didn't account for the correlation! 
-The approach of ANOVA to this problem is to separate the calculations depending on different "strata", and run a separate linear regression for each of them. In the formula, we need to specify the strata, for example, 1 for each subject. Note: while this is similar to a mixed model, it is *NOT a mixed model*. A mixed model does not run a separate least-square regression for each strata, but rather allow a different estimate of each coefficient within a pre-defined nesting. 
+# Repeated-measures ANOVA
 
-In this example, each participant of group A and B made the two measurements of tests y and z. So we have two scores for each subject (within-subject design).  
+One of the assumptions of ANOVA is that the groups of which we are examining the means are independent. Independence is the contrary of correlation, when observations influence each other. Correlation may be relevant in some cases, for example when you measure the same response on the same group of individuals, as in within-subjects designs. Broadly speaking, the errors will be smaller because measurements come from the same people, and this could generate significant misalignment of your result.
+
+Look at our residual variance in the previous ANOVA: it's approximately `r round(ssq[4])` , but it could be bigger if we didn't account for the correlation!
+
+The approach of ANOVA to this problem is to separate the calculations on the data in different layers - or "strata". In the background, the function ANOVA runs a separate linear regression for each of the strata.
+
+In the formula, we need to specify the strata, for example, 1 for each subject (since the measurement is repeated a number of times for each subjects).
+
+This process reminds of a mixed model, but it is *NOT a mixed model*. A mixed model does not run a separate linear regression for each strata, but rather allow a different estimate of each effect within a pre-defined grouping.
+
+In this example, each participant received treatment A or B, but the response was measured with both tests y or z for each subject (within-subject design).
+
+Let's generate the data:
 
 ```{r}
-subjr<-rep(1:30,2)
-subjr<-sort(subjr)
-groupr<-rep(c("a", "a", "b", "b"), 15)
-testr<-rep(c("y", "z"), 15)
-responser<-sample(round(rnorm(500, mean=8, sd=6), digits=3), 60)
-rd.df<-as.data.frame(cbind(subjr, groupr, testr, responser))
-rd.df$responser<-as.numeric(as.character(rd.df$responser))
-summary(rd.df)
+set.seed(88)
+subj.r<-rep(1:30,2)
+subj.r<-sort(subj.r)
+treatment.r<-rep(c("a", "a", "b", "b"), 15)
+test.r<-rep(c("y", "z"), 15)
+response.r<-sample(round(rnorm(500, mean=8, sd=6), digits=3), 60)
+rd.df<-as.data.frame(cbind(subj.r, treatment.r, test.r, response.r))
+rd.df$response.r<-as.numeric(as.character(rd.df$response.r))
+knitr::kable(head(rd.df))
 ```
 
 ```{r}
-r.av<-aov(responser ~ groupr*testr + Error(subjr), data = rd.df)
-summ.tidy.rr<-tidy(r.av)
+r.av<-aov(response.r ~ treatment.r*test.r + Error(subj.r), data = rd.df)
+summ.tidy.rr<-broom::tidy(r.av)
 summ.tidy.rr.eff<-subset(summ.tidy.rr, term!="Residuals")
 summ.tidy.rr.res<-subset(summ.tidy.rr, term=="Residuals", select = -c(statistic, p.value))
+knitr::kable(summ.tidy.rr)
 ```
 
-Here are the statistics of the effects. We have three estimates, just as before, 2 for the effects of group and test, and their reciprocal interaction. The "stratum" indicates the grouping  - in this case overall and repeated within subject. First, the between-subject factor is listed (group), and then the within-subject factors (test and its interaction):
+In the output, we have 3 estimates, just as before, 2 for the effects of treatment and test, plus their reciprocal interaction.
+
+The "stratum" (i.e., singular of "strata" - which is by the way a latin word!) indicates the level at which each of these estimates are re-calculared: at the level of each subject, and at the level of each within-subject factors (test and its interaction), that are repeated by subject:
 
 ```{r}
-summ.tidy.rr.eff
+knitr::kable(summ.tidy.rr.eff)
 ```
 
-In fact, we have two residual errors this time, the between and the within subject errors:
+We also have two residual variances this time, the within-subject, and the within-group sum of squares:
 
 ```{r}
-summ.tidy.rr.res
+knitr::kable(summ.tidy.rr.res)
 ```
 
-We can calculate the percentage of variance explained by group, excluding the within-subject variation (partial ETA-Squared):
+Calculating the effect size for the repeated factor is a little different. We can calculate the percentage of variance explained by test, taking into account the variance within group, but excluding the within-subject variation (partial eta-squared):
 
 ```{r}
-p.eta.group<-summ.tidy.rr.eff$sumsq[1]/(summ.tidy.rr.eff$sumsq[1]+summ.tidy.rr.res$sumsq[1])
-cat("Partial Eta-Squared (group):", round(p.eta.group, 2))
+p.eta.test <- summ.tidy.rr.eff$sumsq[2]/(summ.tidy.rr.eff$sumsq[2]+summ.tidy.rr.res$sumsq[2])
+cat("Partial eta-squared (test):", round(p.eta.test, 2))
 ```
 
-The total eta-squared uses the total sum of squares, including both between and within subject errors:
+The total eta-squared uses the total sum of squares, including both within-subject and within-group variance:
 
 ```{r}
-eta.group<-summ.tidy.rr.eff$sumsq[1]/(summ.tidy.rr.eff$sumsq[1]+summ.tidy.rr.res$sumsq[1]+summ.tidy.rr.res$sumsq[2])
-cat("Eta-Squared (group):", round(eta.group, 2))
+eta.test<-summ.tidy.rr.eff$sumsq[2]/(summ.tidy.rr.eff$sumsq[2]+summ.tidy.rr.res$sumsq[2]+summ.tidy.rr.res$sumsq[1])
+cat("eta-squared (test):", round(eta.test, 2))
 ```
 
-In summary, the approach of repeated-measures anova to repeated measures is *separation*, ie, fitting strata-level regressions per each unit of repetition. This works well when the groups are balanced, ie, each subject has equal number of observations and, hence, degrees of freedom, on which the calculation of the sum of squares is based. But if a subject misses one observations, it needs to be dropped or imputed. When the groups are unbalanced and we don't want to drop subjects or impute observations, we need to take another approach. One is to use a linear model adding a correlation term between observations, "relaxing" the assumption of independence (Marginal Model or GEE). Another approach is to introduce another kind of effect, the random effect, typical of the mixed model, that allow to extract individual-level estimates. 
+## Alternatives to RM Anova
+
+In summary, when you have more than one measurement by subject, and you have a condition of non-independence, the approach of repeated-measures anova is *separation*, i.e., performing strata-level regressions for each unit of repetition.
+
+This works well when the strata are balanced, for example if each subject has equal number of observations and, hence, degrees of freedom, on which the calculation of the sum of squares is based.
+
+But if a subject has some missing observations, the whole record needs to be dropped or imputed.
+
+When the strata are unbalanced and we risk to drop too many subjects or impute too many observations, we may decide to take another approach:
+
+1.  a linear model that includes a correlation term between repeated measures, a relaxation of the assumption of independence, termed Marginal Model or GEE.
+2.  a linear model including a new kind of effect, the random effect, that makes the model "mixed" and allows to calculate individual-level coefficients.
