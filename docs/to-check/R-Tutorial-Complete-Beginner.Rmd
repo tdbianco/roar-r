@@ -7,13 +7,13 @@ output: html_notebook
 
 This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+Try executing this chunk by clicking the *Run* button (the green arrow pointing to the right) within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
 
 ```{r}
 paste("hello!")
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+Add a new chunk by clicking the *Insert* button on the toolbar and choosing *R* or by pressing *Cmd+Option+I*.
 
 Enter a new chunk below:
 
@@ -38,35 +38,38 @@ There are very few coding essentials you need to know to do basic operations wit
 
 ## Assignment and class
 
-Any text entered in a chunk is interpreted as code. Pressing *Cmd+Enter* runs the code. 
+Any text entered in a chunk is interpreted as code. Pressing *Cmd+Enter* after you placed the cursor next to the code, runs the code and gives you the output. 
 
 ```{r}
 3 + 1
 ```
 
 To create a named object, assign a value to a specific variable. To assign a value, we draw a "arrow sign" between the variable name and the value. 
-Assign the value 2 to the variable b below the #. 
-Assign the value "hello!" to the variable c below the ##.
+
+In the next chunk, I assigned the value 1 to the variable a, and the value "done!" to the variable a_2.
+
+In the next chunk, assign the value 2 to the variable b, and the value "hello!" to the variable c.
 
 ```{r}
 a <- 1
-#
+a_2 <-"done!"
+#Assign the value 2 to the variable b in the next line: 
 
-##
+##Assign the value "hello!" to the variable c in the next line:
 
 ```
 
+To make your code take effect, remember to run the chunk by pressing *Cmd+Enter*!
 
 The variable will be stored in the Environment. In a new chunck, you can type the variable name in a new line and display its value by running the chunck. You can also access the variable in the Environment Tab to open a preview of the variable.
 
-Enter the variable b below the # and visualise its value.
-Enter the variable c below the ## and visualise its value.
-
+I called the variable a in the next chunk, run the chunk to visualise its value.
+Call the variable c and visualise its value.
 
 ```{r}
-#
-
-##
+#Insert the variable b below:
+a
+##Insert the variable c below:
 
 ```
 
@@ -171,11 +174,42 @@ Bonus question: can you create a variable containing the value in the 2nd row an
 
 # Import a dataset
 
-You can read a spreadsheet into R from an online or a local path:  
+You can read a spreadsheet into R from an online or a local path. For this example, we are using a dataset that is already present in R. 
 
 ```{r}
-# If you are importing a file from the web, enter the url / if you are importing from local place the cursor in front of the word 'url' and press Cmd+Shift+C to comment
+install.packages("lme4") #this library contains the example dataset
+library(lme4)
+data(sleepstudy)
+#Preview the first 6 rows of the dataset:
+head(sleepstudy)
+```
+Indexing cells, works the same as indexing in matrices:
 
+```{r}
+sleepstudy[2, 1]
 ```
 
+To index the variables of the dataset instead, we use the symbol *$*:
+
+```{r}
+sleepstudy$Reaction
+```
+We can make changes to a specific variable by indexing with the *$*:
+
+```{r}
+sleepstudy$Reaction <- sleepstudy$Reaction + 1
+```
+
+And we can make operations by applying various functions, such as the mean:
+
+```{r}
+mean(sleepstudy$Reaction)
+```
+
+Calculate the standard deviation (function: *sd*) to the variable Reaction:
+
+```{r}
+#
+
+```
 
