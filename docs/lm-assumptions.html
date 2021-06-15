@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Checking the assumption of linear regression</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Hear me ROAR-R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="blog.html">Blog</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Exploring your data
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="propensity-scores.html">Matching Subsamples</a>
+    </li>
+    <li>
+      <a href="geo-info.html">Modelling multi-site data</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="anova.html">Anova</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lm-assumptions.html">Assumptions</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LMM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lmm-essential-tutorial.html">Essential Tutorial</a>
+    </li>
+    <li>
+      <a href="lmm-contrasts-tutorial.html">Customising Contrasts</a>
+    </li>
+    <li>
+      <a href="lmm-het-var.html">Modelling Heterogeneus Variance</a>
+    </li>
+    <li>
+      <a href="result-report.html">Reporting of Results</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    ML
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="ml_ts.html">Supervised Learning with Time Series for Beginners</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Checking the assumption of linear regression</h1>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#initialize-session">Initialize session</a></li>
+<li><a href="#linear-model">Linear Model</a><ul>
+<li><a href="#non-linearity-and-heteroscedacity">Non-linearity and Heteroscedacity</a></li>
+<li><a href="#correlation-error-terms">Correlation error terms</a></li>
+<li><a href="#outliers">Outliers</a></li>
+<li><a href="#high-leverage-points">High leverage points</a></li>
+<li><a href="#collinearity">Collinearity</a><ul>
+<li><a href="#correlation">Correlation</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#linear-mixed-model">Linear Mixed Model</a><ul>
+<li><a href="#non-linearity-and-heteroscedacity-1">Non-linearity and Heteroscedacity</a></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="initialize-session" class="section level1">
+<h1>Initialize session</h1>
+<pre class="r"><code>data(&quot;ChickWeight&quot;)
+summary(ChickWeight)</code></pre>
+<pre><code>##      weight           Time           Chick    
+##  Min.   : 35.0   Min.   : 0.00   13     : 12  
+##  1st Qu.: 63.0   1st Qu.: 4.00   9      : 12  
+##  Median :103.0   Median :10.00   20     : 12  
+##  Mean   :121.8   Mean   :10.72   10     : 12  
+##  3rd Qu.:163.8   3rd Qu.:16.00   17     : 12  
+##  Max.   :373.0   Max.   :21.00   19     : 12  
+##                                  (Other):506  
+##  Diet   
+##  1:220  
+##  2:120  
+##  3:120  
+##  4:118  
+##         
+##         
+## </code></pre>
+<pre class="r"><code>attach(ChickWeight)</code></pre>
+</div>
+<div id="linear-model" class="section level1">
+<h1>Linear Model</h1>
+<pre class="r"><code>lrmod &lt;- lm(weight~Time+Diet)
+summary(lrmod)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = weight ~ Time + Diet)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -136.851  -17.151   -2.595   15.033  141.816 
+## 
+## Coefficients:
+##             Estimate Std. Error t value
+## (Intercept)  10.9244     3.3607   3.251
+## Time          8.7505     0.2218  39.451
+## Diet2        16.1661     4.0858   3.957
+## Diet3        36.4994     4.0858   8.933
+## Diet4        30.2335     4.1075   7.361
+##             Pr(&gt;|t|)    
+## (Intercept)  0.00122 ** 
+## Time         &lt; 2e-16 ***
+## Diet2       8.56e-05 ***
+## Diet3        &lt; 2e-16 ***
+## Diet4       6.39e-13 ***
+## ---
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 35.99 on 573 degrees of freedom
+## Multiple R-squared:  0.7453, Adjusted R-squared:  0.7435 
+## F-statistic: 419.2 on 4 and 573 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div id="non-linearity-and-heteroscedacity" class="section level2">
+<h2>Non-linearity and Heteroscedacity</h2>
+<pre class="r"><code>ChickWeight$res &lt;- resid(lrmod)
+ChickWeight$fit &lt;- fitted(lrmod)
+library(ggplot2)
+theme_set(theme_bw())
+ggplot(data=ChickWeight, aes(x=fit, y=res)) + geom_point(shape=21, size=3, 
+                                                         col=&quot;black&quot;, fill=&quot;gray&quot;, 
+                                                         alpha=0.7) + 
+  labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
+  geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>By this plot, we can see 2 things: the relation is likely not linear (curved line of smooth fit) and the assumption of heteroscedacity is not respected, i.e., the variance of the error terms is not constant. This happens when the error terms increase with the increase of the response. For addressing both of this problems, we can attempt a non-linear transformation of x and y. For the heteroscedacity problem, we may choose a “concave” function, such as square root or log.</p>
+<pre class="r"><code>lrmodlog &lt;- lm(log(weight)~I(Time^2)+Diet)
+ChickWeight$reslog &lt;- resid(lrmodlog)
+ChickWeight$fitlog &lt;- fitted(lrmodlog)
+ggplot(data=ChickWeight, aes(x=fitlog, y=reslog)) + geom_point(shape=21, size=3, 
+                                                               col=&quot;black&quot;, fill=&quot;gray&quot;, 
+                                                               alpha=0.7) + 
+  labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
+  geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>The “funnel” shape typical of heteroscedacity disappeared, though the pattern is not linear yet. Maybe the transformation of x is not appropriate.</p>
+<pre class="r"><code>lrmodlog2 &lt;- lm(log(weight)~I(Time^2)+I(Time^3)+Diet)
+ChickWeight$reslog2 &lt;- resid(lrmodlog2)
+ChickWeight$fitlog2 &lt;- fitted(lrmodlog2)
+ggplot(data=ChickWeight, aes(x=fitlog2, y=reslog2)) + geom_point(shape=21, size=3, 
+                                                                 col=&quot;black&quot;, fill=&quot;gray&quot;, 
+                                                                 alpha=0.7) + 
+  labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
+  geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Better.</p>
+<pre class="r"><code>lrmodlog3 &lt;- lm(log(weight)~poly(Time,4)+Diet)
+ChickWeight$reslog3 &lt;- resid(lrmodlog3)
+ChickWeight$fitlog3 &lt;- fitted(lrmodlog3)
+ggplot(data=ChickWeight, aes(x=fitlog3, y=reslog3)) + geom_point(shape=21, size=3, 
+                                                                 col=&quot;black&quot;, fill=&quot;gray&quot;, 
+                                                                 alpha=0.7) + 
+  labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
+  geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>Transforming time at the second, third and fourth power significantly improve the fit of our model. Let’s check it out.</p>
+<pre class="r"><code>summary(lrmodlog3)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = log(weight) ~ poly(Time, 4) + Diet)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -1.0218 -0.1042  0.0104  0.1249  0.5703 
+## 
+## Coefficients:
+##                Estimate Std. Error t value
+## (Intercept)     4.50907    0.01480 304.747
+## poly(Time, 4)1 12.58899    0.21950  57.353
+## poly(Time, 4)2 -1.52536    0.21942  -6.952
+## poly(Time, 4)3 -0.17045    0.21941  -0.777
+## poly(Time, 4)4  0.16276    0.21941   0.742
+## Diet2           0.11999    0.02491   4.818
+## Diet3           0.24751    0.02491   9.937
+## Diet4           0.24583    0.02504   9.818
+##                Pr(&gt;|t|)    
+## (Intercept)     &lt; 2e-16 ***
+## poly(Time, 4)1  &lt; 2e-16 ***
+## poly(Time, 4)2 9.90e-12 ***
+## poly(Time, 4)3    0.438    
+## poly(Time, 4)4    0.459    
+## Diet2          1.87e-06 ***
+## Diet3           &lt; 2e-16 ***
+## Diet4           &lt; 2e-16 ***
+## ---
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.2194 on 570 degrees of freedom
+## Multiple R-squared:  0.8606, Adjusted R-squared:  0.8588 
+## F-statistic: 502.5 on 7 and 570 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div id="correlation-error-terms" class="section level2">
+<h2>Correlation error terms</h2>
+<pre class="r"><code>ggplot(data=ChickWeight, aes(x=Time, y=res, 
+                             group=Chick, fill=Chick, 
+                             col=Chick)) + 
+  geom_point(shape=21, size=3, 
+             col=&quot;black&quot;, alpha=0.7,
+             position = position_dodge(10)) + 
+  labs(y=&quot;Residuals&quot;, x=&quot;Time&quot;) + geom_path(position = position_dodge(10)) +
+  theme(legend.position = &quot;none&quot;)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>This plot is also showing a problem, that is that there is a time pattern in the error terms. This is not very problematic for the fit, but rather for the estimate of the Ci and the p-values, as it increases the probability of a false positive. Let’s check the same plot with the transformed variables:</p>
+<pre class="r"><code>ggplot(data=ChickWeight, aes(x=Time, y=reslog3, 
+                             group=Chick, fill=Chick, 
+                             col=Chick)) + 
+  geom_point(shape=21, size=3, 
+             col=&quot;black&quot;, alpha=0.7,
+             position = position_dodge(10)) + 
+  labs(y=&quot;Residuals&quot;, x=&quot;Time&quot;) + geom_path(position = position_dodge(10)) +
+  theme(legend.position = &quot;none&quot;)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Here we see that the time pattern is less visible for observations that tended to increase over time, while there is still a certain trend for the decreasing values.</p>
+</div>
+<div id="outliers" class="section level2">
+<h2>Outliers</h2>
+<pre class="r"><code>library(MASS)
+ChickWeight$studres &lt;- studres(lrmod)
+ChickWeight$studres3 &lt;- studres(lrmodlog3)
+
+library(ggrepel)
+ggplot(data=ChickWeight, aes(x=fit, y=studres)) + geom_point(shape=21, size=3, 
+                                                             col=&quot;black&quot;, fill=&quot;gray&quot;, 
+                                                             alpha=0.7) + 
+  labs(y=&quot;Studentized Residuals&quot;, x=&quot;Fitted Values&quot;) +
+  geom_hline(yintercept = 3, linetype=&quot;dotted&quot;) +
+  geom_label_repel(aes(label = ifelse(studres&gt;3, paste0(Chick, &quot;-&quot;, Time), &quot;&quot;)),
+                  box.padding   = 0.35, 
+                  point.padding = 0.5,
+                  segment.color = &#39;grey50&#39;)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(data=ChickWeight, aes(x=fitlog3, y=studres3)) + geom_point(shape=21, size=3, 
+                                                                  col=&quot;black&quot;, fill=&quot;gray&quot;, 
+                                                                  alpha=0.7) + 
+  labs(y=&quot;Studentized Residuals&quot;, x=&quot;Fitted Values&quot;) +
+  geom_hline(yintercept = 3, linetype=&quot;dotted&quot;) +
+  geom_label_repel(aes(label = ifelse(studres3&gt;3, paste0(Chick, &quot;-&quot;, Time), &quot;&quot;)),
+                  box.padding   = 0.35, 
+                  point.padding = 0.5,
+                  segment.color = &#39;grey50&#39;)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>We can see here that by transforming we remove the outlier problem.</p>
+</div>
+<div id="high-leverage-points" class="section level2">
+<h2>High leverage points</h2>
+<pre class="r"><code>ChickWeight$lev &lt;- hat(model.matrix(lrmodlog3))
+plot(ChickWeight$lev)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>We don’t see particularly influencial observations in the predictor variables.</p>
+<pre class="r"><code>ChickWeight[ChickWeight$lev&gt;0.2,]</code></pre>
+<pre><code>## Grouped Data: weight ~ Time | Chick
+##  [1] weight   Time     Chick    Diet    
+##  [5] res      fit      reslog   fitlog  
+##  [9] reslog2  fitlog2  reslog3  fitlog3 
+## [13] studres  studres3 lev     
+## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
+</div>
+<div id="collinearity" class="section level2">
+<h2>Collinearity</h2>
+<pre class="r"><code>library(car)
+vif(lrmodlog3)</code></pre>
+<pre><code>##                   GVIF Df GVIF^(1/(2*Df))
+## poly(Time, 4) 1.000972  4        1.000121
+## Diet          1.000972  3        1.000162</code></pre>
+<p>Here I am a little puzzled, as the original model did not have any collinearity. Of course, the 3 transformation of time must be correlated between each other, so this could explain the absurdely high vifs.</p>
+<div id="correlation" class="section level3">
+<h3>Correlation</h3>
+<p>I would normally check the correlation coefficients with cor(), but we have a categorical and numerical predictor here. First, a categorical variable does not increase/decrease, so it does not make muche sense to ask if there is a correlation. Also, the problem of collinearity arises when twob variables are strongly and positively correlated and are harly distinguashable between each other. I think this is not the case. However, we can have a sense of the association by regressing the two and looking at the correlation between the residuals and the observed values:</p>
+<pre class="r"><code>lrmod2 &lt;- lm(Time~Diet, data=ChickWeight)
+rsq &lt;- summary(lrmod2)$r.squared
+sqrt(rsq)</code></pre>
+<pre><code>## [1] 0.02882599</code></pre>
+<p>The squared root of R^2 is the measure of correlation between residuals and observed values, and we see this is minimal!</p>
+<p>As a conclusion, this model: <em>log(weight) ~ I(Time^2) + I(Time^3) + I(Time^4) + Diet</em> has been demonstrated to be a “good” (relatively best) fit for the ChickWeigh data.</p>
+</div>
+</div>
+</div>
+<div id="linear-mixed-model" class="section level1">
+<h1>Linear Mixed Model</h1>
+<pre class="r"><code>library(lme4)
+lmrmod &lt;- lmer(weight~Time+Diet+(1|Chick))
+summary(lmrmod)</code></pre>
+<pre><code>## Linear mixed model fit by REML. t-tests use
+##   Satterthwaite&#39;s method [lmerModLmerTest]
+## Formula: weight ~ Time + Diet + (1 | Chick)
+## 
+## REML criterion at convergence: 5584
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.0591 -0.5779 -0.1182  0.4962  3.4515 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  Chick    (Intercept) 525.4    22.92   
+##  Residual             799.4    28.27   
+## Number of obs: 578, groups:  Chick, 50
+## 
+## Fixed effects:
+##             Estimate Std. Error       df
+## (Intercept)  11.2438     5.7887  57.9038
+## Time          8.7172     0.1755 531.4437
+## Diet2        16.2100     9.4643  46.2232
+## Diet3        36.5433     9.4643  46.2232
+## Diet4        30.0129     9.4708  46.3486
+##             t value Pr(&gt;|t|)    
+## (Intercept)   1.942 0.056960 .  
+## Time         49.684  &lt; 2e-16 ***
+## Diet2         1.713 0.093461 .  
+## Diet3         3.861 0.000349 ***
+## Diet4         3.169 0.002709 ** 
+## ---
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##       (Intr) Time   Diet2  Diet3 
+## Time  -0.307                     
+## Diet2 -0.550 -0.015              
+## Diet3 -0.550 -0.015  0.339       
+## Diet4 -0.550 -0.011  0.339  0.339</code></pre>
+<div id="non-linearity-and-heteroscedacity-1" class="section level2">
+<h2>Non-linearity and Heteroscedacity</h2>
+<pre class="r"><code>ChickWeight$res &lt;- resid(lmrmod)
+ChickWeight$fit &lt;- fitted(lmrmod)
+ggplot(data=ChickWeight, aes(x=fit, y=res)) + geom_point(shape=21, size=3, col=&quot;black&quot;, fill=&quot;gray&quot;, alpha=0.7) + 
+  labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
+  geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Wohooo!! Heteroscedacity respected, but how curved!!</p>
+<pre class="r"><code>lrmodtr &lt;- lmer(weight~Time+I(Time^2)+Diet+(1|Chick))
+ChickWeight$restr &lt;- resid(lrmodtr)
+ChickWeight$fittr &lt;- fitted(lrmodtr)
+ggplot(data=ChickWeight, aes(x=fittr, y=restr)) + geom_point(shape=21, size=3, col=&quot;black&quot;, fill=&quot;gray&quot;, alpha=0.7) + 
+  labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
+  geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<pre class="r"><code>lrmodtr2 &lt;- lmer(weight~Time+poly(Time,4)+Diet+(1|Chick))
+ChickWeight$restr2 &lt;- resid(lrmodtr2)
+ChickWeight$fittr2 &lt;- fitted(lrmodtr2)
+ggplot(data=ChickWeight, aes(x=fittr2, y=restr2)) + geom_point(shape=21, size=3, col=&quot;black&quot;, fill=&quot;gray&quot;, alpha=0.7) + 
+  labs(y=&quot;Residuals&quot;, x=&quot;Fitted Values&quot;) + geom_smooth(se = FALSE, col=&quot;red&quot;) +
+  geom_hline(yintercept = 0, linetype=&quot;dotted&quot;)</code></pre>
+<p><img src="lm-assumptions_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>If I attempt the mixed model… this is not linear at all!!</p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

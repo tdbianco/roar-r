@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Anova - Analysis of Variance</title>
+
+<script src="site_libs/header-attrs-2.8/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Hear me ROAR-R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="blog.html">Blog</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Exploring your data
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="propensity-scores.html">Matching Subsamples</a>
+    </li>
+    <li>
+      <a href="geo-info.html">Modelling multi-site data</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="anova.html">Anova</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lm-assumptions.html">Assumptions</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LMM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lmm-essential-tutorial.html">Essential Tutorial</a>
+    </li>
+    <li>
+      <a href="lmm-contrasts-tutorial.html">Customising Contrasts</a>
+    </li>
+    <li>
+      <a href="lmm-het-var.html">Modelling Heterogeneus Variance</a>
+    </li>
+    <li>
+      <a href="result-report.html">Reporting of Results</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    ML
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="ml_ts.html">Supervised Learning with Time Series for Beginners</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Anova - Analysis of Variance</h1>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a>
+<ul>
+<li><a href="#t-test-is-a-special-case-of-anova-and-anova-is-a-special-case-of-linear-regression">T-test is a special case of Anova, and Anova is a special case of Linear Regression</a></li>
+</ul></li>
+<li><a href="#the-one-way-anova">The One-way Anova</a></li>
+<li><a href="#running-the-anova">Running the Anova</a>
+<ul>
+<li><a href="#reporting">Reporting</a></li>
+<li><a href="#effect-size">Effect Size</a></li>
+</ul></li>
+<li><a href="#anova-with-an-interaction-effect">Anova with an Interaction Effect</a></li>
+<li><a href="#repeated-measures-anova">Repeated-measures ANOVA</a>
+<ul>
+<li><a href="#alternatives-to-rm-anova">Alternatives to RM Anova</a></li>
+</ul></li>
+</ul>
+</div>
+
+<p>This is based on my notes of the statistics course given by <a href="https://www.umass.edu/linguistics/member/brian-dillon">Prof. Brian Dillon</a> (UMass Amherst).</p>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Anova is the analysis of variance based on differences among means of more than 2 samples, by comparing 2 estimates of population variance.</p>
+<p>What are these 2 estimates of the population variance that we compare to each other with this test?</p>
+<ol style="list-style-type: decimal">
+<li>The first estimate comes from the average of the variance on each group, the within-group variance. The within-group variance is determined by chance factors, usually unknown, that influence each observation unpredictably. Every kind of data in the world is affected by chance factor, no matter how precise the measurement!</li>
+<li>The second type of variance comes from the variation of means of the samples, the between-group variance, and it varies systematically with the factors of interest, such as treatment or condition.</li>
+</ol>
+<p>The job of this test is to compare the within-group variance (determined by chance) and the between-group variance (determine by a factor of interest that varies between groups). The aim is to determine if the between-group variance exceeds the variance determined by chance, meaning that the variable of interest is more relevant than chance only.</p>
+<div id="t-test-is-a-special-case-of-anova-and-anova-is-a-special-case-of-linear-regression" class="section level2">
+<h2>T-test is a special case of Anova, and Anova is a special case of Linear Regression</h2>
+<p>When only 2 groups are compared, the T-test and the Anova hold the same result. Both examine if the population means differ from one another, assuming equal within- and between-group variances for both. The same assumption extends to linear regression, where the residuals (data with group means subtracted) have to be equivalent. In R, the fuction ‘aov’ is actually a wrapper of ‘lm’, the function that performs linear regression!</p>
+</div>
+</div>
+<div id="the-one-way-anova" class="section level1">
+<h1>The One-way Anova</h1>
+<p>Let’s create a dummy dataset:</p>
+<pre class="r"><code>set.seed(88) #set seed for replicability of randomly generated data
+treatment &lt;- c(rep(&quot;a&quot;, 10), rep(&quot;b&quot;, 10), rep(&quot;c&quot;, 10)) #3 groups: independent variable
+response &lt;- round(rnorm(30, mean = 80, sd = 12), digits = 2) #a normally distributed dependent variable
+#various steps to put IV and DV together in a dataset, and format it
+df &lt;- cbind(treatment, response) #IV and DV in columns
+df&lt;-data.frame(df) 
+names(df)&lt;-c(&quot;treatment&quot;, &quot;response&quot;) #name the columns
+df$treatment&lt;-as.factor(df$treatment)
+df$response&lt;-as.numeric(df$response)
+knitr::kable(head(df)) #preview first 6 rows</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">treatment</th>
+<th align="right">response</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">a</td>
+<td align="right">77.28</td>
+</tr>
+<tr class="even">
+<td align="left">a</td>
+<td align="right">87.76</td>
+</tr>
+<tr class="odd">
+<td align="left">a</td>
+<td align="right">108.15</td>
+</tr>
+<tr class="even">
+<td align="left">a</td>
+<td align="right">57.85</td>
+</tr>
+<tr class="odd">
+<td align="left">a</td>
+<td align="right">85.52</td>
+</tr>
+<tr class="even">
+<td align="left">a</td>
+<td align="right">81.49</td>
+</tr>
+</tbody>
+</table>
+<p>Let’s calculate two estimates of the within- and between-group variances, the within- and the between-mean square, with the formulas:</p>
+<ol style="list-style-type: decimal">
+<li>Within MS: Within Sum of Squares / N - G</li>
+<li>Between MS: [N Group * (Group Mean - Grand Mean)^2] / G -1</li>
+</ol>
+<pre class="r"><code># Group Means
+m1&lt;-with(df, mean(response[treatment==&quot;a&quot;]))
+m2&lt;-with(df, mean(response[treatment==&quot;b&quot;]))
+m3&lt;-with(df, mean(response[treatment==&quot;c&quot;]))
+
+# Grand Mean
+GM&lt;-(m1+m2+m3)/3
+
+#Within Sum of Squares and Within MS
+wss &lt;- sum((df$response-GM)^2)
+wms &lt;- wss/(nrow(df)-3)
+
+#Between MS
+bms&lt;- (with(df, length(response[treatment==&quot;a&quot;])) * ((m1-GM)^2) + 
+      + with(df, length(response[treatment==&quot;b&quot;])) * (m2-GM)^2 +
+      + with(df, length(response[treatment==&quot;c&quot;])) * (m3-GM)^2) / 3-1
+
+#Print
+cat(&quot;Within Group Variance:&quot;, round(wms, 2), &quot;\n&quot;)</code></pre>
+<pre><code>## Within Group Variance: 152.93</code></pre>
+<pre class="r"><code>cat(&quot;Between Group Variance:&quot;, round(bms, 2))</code></pre>
+<pre><code>## Between Group Variance: 162.42</code></pre>
+<p>Within the groups, observations vary by a factor of 153 on average, due to chance factors, such as unsystematic measurement error, individual differences and other unknown factors.</p>
+<p>The average variance between the groups is 162: the statistical test will investigate if this variance attributable to treatment - a factor that systematically varies between the groups - is significantly different from the within group variance.</p>
+<p>So 162 is different from 153 , but is that enough?</p>
+</div>
+<div id="running-the-anova" class="section level1">
+<h1>Running the Anova</h1>
+<p>The ANOVA will provide 2 useful statistics, the F Value and the p-value:</p>
+<pre class="r"><code>aov&lt;-aov(response~treatment, df)
+s.aov&lt;-summary(aov) 
+s.aov</code></pre>
+<pre><code>##             Df Sum Sq Mean Sq F value Pr(&gt;F)
+## treatment    2    490   245.1   1.819  0.182
+## Residuals   27   3639   134.8</code></pre>
+<p>We can access further information from this output. For example, the means per group (that we calculated manually before), and the coefficients of the treatment effect (non standardized effect size), with standard error:</p>
+<pre class="r"><code>m.t.means &lt;- model.tables(aov, &quot;mean&quot;, se=TRUE) #means
+m.t.means</code></pre>
+<pre><code>## Tables of means
+## Grand mean
+##          
+## 78.38067 
+## 
+##  treatment 
+## treatment
+##     a     b     c 
+## 78.80 83.11 73.24 
+## 
+## Standard errors for differences of means
+##         treatment
+##             5.192
+## replic.        10</code></pre>
+<p>So, the average response with treatment “a” is 78.8 , with “b” it is 83.11 , with “c” it is 73.24</p>
+<pre class="r"><code>m.t.eff &lt;- model.tables(aov, &quot;effects&quot;, se=TRUE) #coefficients
+m.t.eff</code></pre>
+<pre><code>## Tables of effects
+## 
+##  treatment 
+## treatment
+##      a      b      c 
+##  0.415  4.730 -5.146 
+## 
+## Standard errors of effects
+##         treatment
+##             3.671
+## replic.        10</code></pre>
+<p>The coefficients are a measure of the effect of each treatment; they are not standardized, differently from the effect sizes that we will see below, therefore they are on the same scale of the response. We may conclude, that treatment “a” determines a variation of 0.42 points of the response, and so on. Of course, to interpret that, we need to have more information on the DV - that’s when standardized effect sized may become useful (see below).</p>
+<div id="reporting" class="section level2">
+<h2>Reporting</h2>
+<p>We can report the output table in a standard table:</p>
+<pre class="r"><code>tidy.summ&lt;-broom::tidy(aov)
+knitr::kable(tidy.summ)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">df</th>
+<th align="right">sumsq</th>
+<th align="right">meansq</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">treatment</td>
+<td align="right">2</td>
+<td align="right">490.2644</td>
+<td align="right">245.1322</td>
+<td align="right">1.818912</td>
+<td align="right">0.1815219</td>
+</tr>
+<tr class="even">
+<td align="left">Residuals</td>
+<td align="right">27</td>
+<td align="right">3638.7526</td>
+<td align="right">134.7686</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
+<p>In the text, we can report that the IV - treatment - did not give a statistically significant difference, with F(2,27) = 1.82, p-value = 0.18</p>
+</div>
+<div id="effect-size" class="section level2">
+<h2>Effect Size</h2>
+<p>In case you find a significant effect, it is good practice to report how big/small this effect is. The coefficient, or non standardized effect size, can already give you an idea about that, but it depends on the scale of the dependent variable. It may be useful to report an effect size that is standardized, so it represents the change of the DV due to treatment in percentage.</p>
+<p>The standardized effect size can help interpret the reliability of the p-value: if the sample size is small or highly heterogeneous, the p-value may be inflated towards significance, and give a false positive (Type I Error). Both sample size and standard deviation (a measure of heterogeneity) influence the estimate of variance, and may sum to the true effect of the IV. If that is the case, the effect size will be small, warning you that something is off with your conclusion.</p>
+<p>The R-Squared is the best way of calculating the effect size for One-way Anova, and tells you how much of the variance is due to the effect of treatment:</p>
+<pre class="r"><code>sum_squares_treatment &lt;- tidy.summ$sumsq[1]
+sum_squares_residual &lt;- tidy.summ$sumsq[2]
+
+R_squared &lt;- sum_squares_treatment /
+            (sum_squares_treatment + sum_squares_residual)
+
+R_squared</code></pre>
+<pre><code>## [1] 0.1187364</code></pre>
+<p>The effects size R-Squared is 0.12, so of a quite small size. If the ANOVA has given a significant treatment effect, we should be quite careful in our interpretation.</p>
+</div>
+</div>
+<div id="anova-with-an-interaction-effect" class="section level1">
+<h1>Anova with an Interaction Effect</h1>
+<p>In the factorial analysis of variance above there are 3 groups, and the DV has been recorded in a between-subject design (i.e., the people of the 3 groups are different people). But there are no other variables! What if half of the subjects in each group was tested with a different test (y or z) for ascertaining the treatment effect?</p>
+<p>If that is the case, it is necessary to take into account that the DV measurement in the different subjects comes from a different method. In statistical terms, it means that there may be an interaction between the IV - treatment/group - and the variable <em>test</em>.</p>
+<p>Let’s generate some data:</p>
+<pre class="r"><code>set.seed(88)
+subj1&lt;-rep(1:30)
+group1&lt;-rep(&quot;a&quot;, 30)
+condition&lt;-rep(c(&quot;y&quot;, &quot;z&quot;), 15)
+response1&lt;-round(rnorm(30, mean = 15, sd = 0.5), digits = 2)
+
+subj2&lt;-rep(31:60)
+group2&lt;-rep(&quot;b&quot;, 30)
+condition&lt;-rep(c(&quot;y&quot;, &quot;z&quot;), 15)
+response2&lt;-round(rnorm(30, mean = 18, sd = 0.7), digits = 2)
+
+subj3&lt;-rep(61:90)
+group3&lt;-rep(&quot;c&quot;, 30)
+condition&lt;-rep(c(&quot;y&quot;, &quot;z&quot;), 15)
+response3&lt;-round(rnorm(30, mean = 21, sd = 0.9), digits = 2)
+
+fa_1&lt;-cbind(subj1, group1, condition, response1)
+fa_2&lt;-cbind(subj2, group2, condition, response2)
+fa_3&lt;-cbind(subj3, group3, condition, response3)
+
+fa&lt;-rbind(fa_1, fa_2, fa_3)
+fa.df&lt;-as.data.frame(fa)
+colnames(fa.df)&lt;-c(&quot;subj&quot;, &quot;treatment&quot;, &quot;test&quot;, &quot;response&quot;)
+fa.df$response&lt;-as.character(fa.df$response)
+fa.df$response&lt;-as.numeric(fa.df$response)
+knitr::kable(head(fa.df))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">subj</th>
+<th align="left">treatment</th>
+<th align="left">test</th>
+<th align="right">response</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">a</td>
+<td align="left">y</td>
+<td align="right">14.89</td>
+</tr>
+<tr class="even">
+<td align="left">2</td>
+<td align="left">a</td>
+<td align="left">z</td>
+<td align="right">15.32</td>
+</tr>
+<tr class="odd">
+<td align="left">3</td>
+<td align="left">a</td>
+<td align="left">y</td>
+<td align="right">16.17</td>
+</tr>
+<tr class="even">
+<td align="left">4</td>
+<td align="left">a</td>
+<td align="left">z</td>
+<td align="right">14.08</td>
+</tr>
+<tr class="odd">
+<td align="left">5</td>
+<td align="left">a</td>
+<td align="left">y</td>
+<td align="right">15.23</td>
+</tr>
+<tr class="even">
+<td align="left">6</td>
+<td align="left">a</td>
+<td align="left">z</td>
+<td align="right">15.06</td>
+</tr>
+</tbody>
+</table>
+<p>To specify that 2 variables interact with each other, we use the ‘*’ sign in the formula. In the output, the effect of the interaction reports both effects, separate by ‘:’:</p>
+<pre class="r"><code>av&lt;-aov(response ~ treatment*test, fa.df)
+tidy.summ &lt;- broom::tidy(av)
+knitr::kable(tidy.summ)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">df</th>
+<th align="right">sumsq</th>
+<th align="right">meansq</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">treatment</td>
+<td align="right">2</td>
+<td align="right">574.450647</td>
+<td align="right">287.2253233</td>
+<td align="right">657.6340465</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">test</td>
+<td align="right">1</td>
+<td align="right">0.169000</td>
+<td align="right">0.1690000</td>
+<td align="right">0.3869441</td>
+<td align="right">0.5355949</td>
+</tr>
+<tr class="odd">
+<td align="left">treatment:test</td>
+<td align="right">2</td>
+<td align="right">1.719247</td>
+<td align="right">0.8596233</td>
+<td align="right">1.9682024</td>
+<td align="right">0.1460980</td>
+</tr>
+<tr class="even">
+<td align="left">Residuals</td>
+<td align="right">84</td>
+<td align="right">36.687467</td>
+<td align="right">0.4367556</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
+<p>According to the ANOVA result, there is a significant effect of treatment, with F(2,84) = 657.63, p-value &lt; 0.001, and a non-significant of test, with F(1,84) = 0.39, p-value = 0.54. But, the interaction between treatment and test is non-significant , meaning that the test that was used made a difference when it comes to measuring the dependent variable.</p>
+<p>To better understand what interaction means, it is useful to visualize the means in a plot:</p>
+<pre class="r"><code>with(fa.df, interaction.plot(treatment, test, response))</code></pre>
+<p><img src="anova_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>From this plot, it looks like the treatment effect is slightly overestimated in treatment A when measured with test y. However, the effect is reversed for treatment b, test y slightly underestimated it. For treatment c, the two tests seems to give the same result. Of course, if there is a systematic change of the dependent variable depending on an external factor, we need to know! That’s why interaction effects can be that important.</p>
+<p>The same considerations about effects sizes also apply to interaction effects; in this case, we may calculate the ratio between the variance (the sum of squares in the output) explained by the treatment/test/treatment*test, and the total variance, termed eta-squared:</p>
+<pre class="r"><code>ssq&lt;-tidy.summ$sumsq
+
+ES1&lt;-ssq[1]/(ssq[1]+ssq[2]+ssq[3])
+ES2&lt;-ssq[2]/(ssq[1]+ssq[2]+ssq[3])
+ES3&lt;-ssq[3]/(ssq[1]+ssq[2]+ssq[3])
+
+cat(&quot;eta-squared of treatment:&quot;, round(ES1, 3), &quot;\n&quot;)</code></pre>
+<pre><code>## eta-squared of treatment: 0.997</code></pre>
+<pre class="r"><code>cat(&quot;eta-squared of test:&quot;, round(ES2, 3), &quot;\n&quot;)</code></pre>
+<pre><code>## eta-squared of test: 0</code></pre>
+<pre class="r"><code>cat(&quot;eta-squared of interaction:&quot;, round(ES3, 3), &quot;\n&quot;)</code></pre>
+<pre><code>## eta-squared of interaction: 0.003</code></pre>
+<p>The effect size of treatment accounts for 99.7% of the variance of the DV. The effect size of test accounts for 0.03% of the variance of the DV. The effect size of interaction accounts for 0.3% of the variance of the DV. In this case, our interpretation is in relative terms; in this case, the effect of treatment seems to only be marginally influenced by test, although the interaction is significant.</p>
+</div>
+<div id="repeated-measures-anova" class="section level1">
+<h1>Repeated-measures ANOVA</h1>
+<p>One of the assumptions of ANOVA is that the groups of which we are examining the means are independent. Independence is the contrary of correlation, when observations influence each other. Correlation may be relevant in some cases, for example when you measure the same response on the same group of individuals, as in within-subjects designs. Broadly speaking, the errors will be smaller because measurements come from the same people, and this could generate significant misalignment of your result.</p>
+<p>Look at our residual variance in the previous ANOVA: it’s approximately 37 , but it could be bigger if we didn’t account for the correlation!</p>
+<p>The approach of ANOVA to this problem is to separate the calculations on the data in different layers - or “strata”. In the background, the function ANOVA runs a separate linear regression for each of the strata.</p>
+<p>In the formula, we need to specify the strata, for example, 1 for each subject (since the measurement is repeated a number of times for each subjects).</p>
+<p>This process reminds of a mixed model, but it is <em>NOT a mixed model</em>. A mixed model does not run a separate linear regression for each strata, but rather allow a different estimate of each effect within a pre-defined grouping.</p>
+<p>In this example, each participant received treatment A or B, but the response was measured with both tests y or z for each subject (within-subject design).</p>
+<p>Let’s generate the data:</p>
+<pre class="r"><code>set.seed(88)
+subj.r&lt;-rep(1:30,2)
+subj.r&lt;-sort(subj.r)
+treatment.r&lt;-rep(c(&quot;a&quot;, &quot;a&quot;, &quot;b&quot;, &quot;b&quot;), 15)
+test.r&lt;-rep(c(&quot;y&quot;, &quot;z&quot;), 15)
+response.r&lt;-sample(round(rnorm(500, mean=8, sd=6), digits=3), 60)
+rd.df&lt;-as.data.frame(cbind(subj.r, treatment.r, test.r, response.r))
+rd.df$response.r&lt;-as.numeric(as.character(rd.df$response.r))
+knitr::kable(head(rd.df))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">subj.r</th>
+<th align="left">treatment.r</th>
+<th align="left">test.r</th>
+<th align="right">response.r</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">a</td>
+<td align="left">y</td>
+<td align="right">3.683</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="left">a</td>
+<td align="left">z</td>
+<td align="right">12.882</td>
+</tr>
+<tr class="odd">
+<td align="left">2</td>
+<td align="left">b</td>
+<td align="left">y</td>
+<td align="right">10.840</td>
+</tr>
+<tr class="even">
+<td align="left">2</td>
+<td align="left">b</td>
+<td align="left">z</td>
+<td align="right">7.350</td>
+</tr>
+<tr class="odd">
+<td align="left">3</td>
+<td align="left">a</td>
+<td align="left">y</td>
+<td align="right">15.190</td>
+</tr>
+<tr class="even">
+<td align="left">3</td>
+<td align="left">a</td>
+<td align="left">z</td>
+<td align="right">23.827</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>r.av&lt;-aov(response.r ~ treatment.r*test.r + Error(subj.r), data = rd.df)
+summ.tidy.rr&lt;-broom::tidy(r.av)
+summ.tidy.rr.eff&lt;-subset(summ.tidy.rr, term!=&quot;Residuals&quot;)
+summ.tidy.rr.res&lt;-subset(summ.tidy.rr, term==&quot;Residuals&quot;, select = -c(statistic, p.value))
+knitr::kable(summ.tidy.rr)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">stratum</th>
+<th align="left">term</th>
+<th align="right">df</th>
+<th align="right">sumsq</th>
+<th align="right">meansq</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">subj.r</td>
+<td align="left">treatment.r</td>
+<td align="right">1</td>
+<td align="right">7.264152</td>
+<td align="right">7.264152</td>
+<td align="right">0.1875885</td>
+<td align="right">0.6682496</td>
+</tr>
+<tr class="even">
+<td align="left">subj.r</td>
+<td align="left">Residuals</td>
+<td align="right">28</td>
+<td align="right">1084.268388</td>
+<td align="right">38.723871</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">Within</td>
+<td align="left">test.r</td>
+<td align="right">1</td>
+<td align="right">21.936097</td>
+<td align="right">21.936097</td>
+<td align="right">0.8124547</td>
+<td align="right">0.3750837</td>
+</tr>
+<tr class="even">
+<td align="left">Within</td>
+<td align="left">treatment.r:test.r</td>
+<td align="right">1</td>
+<td align="right">18.859705</td>
+<td align="right">18.859705</td>
+<td align="right">0.6985134</td>
+<td align="right">0.4103593</td>
+</tr>
+<tr class="odd">
+<td align="left">Within</td>
+<td align="left">Residuals</td>
+<td align="right">28</td>
+<td align="right">755.993779</td>
+<td align="right">26.999778</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+</tbody>
+</table>
+<p>In the output, we have 3 estimates, just as before, 2 for the effects of treatment and test, plus their reciprocal interaction.</p>
+<p>The “stratum” (i.e., singular of “strata” - which is by the way a latin word!) indicates the level at which each of these estimates are re-calculared: at the level of each subject, and at the level of each within-subject factors (test and its interaction), that are repeated by subject:</p>
+<pre class="r"><code>knitr::kable(summ.tidy.rr.eff)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">stratum</th>
+<th align="left">term</th>
+<th align="right">df</th>
+<th align="right">sumsq</th>
+<th align="right">meansq</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">subj.r</td>
+<td align="left">treatment.r</td>
+<td align="right">1</td>
+<td align="right">7.264152</td>
+<td align="right">7.264152</td>
+<td align="right">0.1875885</td>
+<td align="right">0.6682496</td>
+</tr>
+<tr class="even">
+<td align="left">Within</td>
+<td align="left">test.r</td>
+<td align="right">1</td>
+<td align="right">21.936097</td>
+<td align="right">21.936097</td>
+<td align="right">0.8124547</td>
+<td align="right">0.3750837</td>
+</tr>
+<tr class="odd">
+<td align="left">Within</td>
+<td align="left">treatment.r:test.r</td>
+<td align="right">1</td>
+<td align="right">18.859705</td>
+<td align="right">18.859705</td>
+<td align="right">0.6985134</td>
+<td align="right">0.4103593</td>
+</tr>
+</tbody>
+</table>
+<p>We also have two residual variances this time, the within-subject, and the within-group sum of squares:</p>
+<pre class="r"><code>knitr::kable(summ.tidy.rr.res)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">stratum</th>
+<th align="left">term</th>
+<th align="right">df</th>
+<th align="right">sumsq</th>
+<th align="right">meansq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">subj.r</td>
+<td align="left">Residuals</td>
+<td align="right">28</td>
+<td align="right">1084.2684</td>
+<td align="right">38.72387</td>
+</tr>
+<tr class="even">
+<td align="left">Within</td>
+<td align="left">Residuals</td>
+<td align="right">28</td>
+<td align="right">755.9938</td>
+<td align="right">26.99978</td>
+</tr>
+</tbody>
+</table>
+<p>Calculating the effect size for the repeated factor is a little different. We can calculate the percentage of variance explained by test, taking into account the variance within group, but excluding the within-subject variation (partial eta-squared):</p>
+<pre class="r"><code>p.eta.test &lt;- summ.tidy.rr.eff$sumsq[2]/(summ.tidy.rr.eff$sumsq[2]+summ.tidy.rr.res$sumsq[2])
+cat(&quot;Partial eta-squared (test):&quot;, round(p.eta.test, 2))</code></pre>
+<pre><code>## Partial eta-squared (test): 0.03</code></pre>
+<p>The total eta-squared uses the total sum of squares, including both within-subject and within-group variance:</p>
+<pre class="r"><code>eta.test&lt;-summ.tidy.rr.eff$sumsq[2]/(summ.tidy.rr.eff$sumsq[2]+summ.tidy.rr.res$sumsq[2]+summ.tidy.rr.res$sumsq[1])
+cat(&quot;eta-squared (test):&quot;, round(eta.test, 2))</code></pre>
+<pre><code>## eta-squared (test): 0.01</code></pre>
+<div id="alternatives-to-rm-anova" class="section level2">
+<h2>Alternatives to RM Anova</h2>
+<p>In summary, when you have more than one measurement by subject, and you have a condition of non-independence, the approach of repeated-measures anova is <em>separation</em>, i.e., performing strata-level regressions for each unit of repetition.</p>
+<p>This works well when the strata are balanced, for example if each subject has equal number of observations and, hence, degrees of freedom, on which the calculation of the sum of squares is based.</p>
+<p>But if a subject has some missing observations, the whole record needs to be dropped or imputed.</p>
+<p>When the strata are unbalanced and we risk to drop too many subjects or impute too many observations, we may decide to take another approach:</p>
+<ol style="list-style-type: decimal">
+<li>a linear model that includes a correlation term between repeated measures, a relaxation of the assumption of independence, termed Marginal Model or GEE.</li>
+<li>a linear model including a new kind of effect, the random effect, that makes the model “mixed” and allows to calculate individual-level coefficients.</li>
+</ol>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

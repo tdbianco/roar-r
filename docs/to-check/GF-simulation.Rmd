@@ -1,0 +1,154 @@
+---
+title: "Gaze-following Simulation"
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r, include = FALSE}
+# Load packages
+packs <- c("knitr", "dplyr", "ggplot2", "lmerTest", "merTools", "broom.mixed", "car", "knitr", "reshape2")
+lapply(packs, require, character.only = TRUE)
+```
+
+Gaze-following is the behavioural response of following another person's gaze with yours. It is commonly coded as 0/1 (x follow the gaze of y, no or yes). Therefore, I am going to use a binomial model to investigate the occurrance of gaze-following in two experimental conditions. 
+
+# Create dataset
+
+Create a simulation dataset with a binomial variable representing gaze-following, demographics (age and sex) and information about the experiment (a continous variable face indicating the duration of a look on the face before gaze-following, trial number, time to first fixation to the right/left target, experimental condition long vs short, and side of the target right/left). 
+
+```{r}
+set.seed(88)
+ds <- NULL
+
+for (i in 1:40) {
+  id = i
+  age = rep(round(runif(n=1, min=6, max=8),2),12)
+  sex = ifelse((i %% 2)==0, "F", "M")
+  trial = c(1:12)
+  face = runif(n = 12, min = -1, max = 10)
+  R = runif(n = 12, min = -1, max = 10)
+  L = runif(n = 12, min = -1, max = 10)
+  cond = ifelse(i <20, "long", "short")
+  target = rep(x = c("R", "L"), 6)
+temp = cbind(id,age,sex,trial,face,R,L,cond,target)
+ds = rbind(ds, temp)
+}
+
+kable(head(ds), caption = "Table 1: Simulation dataset")
+```
+```{r}
+library(dplyr)
+ds <- data.frame(ds) %>%
+  mutate_each(funs(as.numeric(as.character(.))), -sex, -cond, -target) %>% # format
+  filter(face>0) %>%
+  mutate_each(funs(replace(., . < 0, 0)), -sex, -cond, -target) %>% # remove negative values (missing) with zero
+  mutate(GF=factor(ifelse(target == "R" & R < L, "1",
+                   ifelse(target == "L" & L < R, "1",
+                   "0")))) # detect GF: when time to first fixation is faster towards the side of the target
+head(ds)
+```
+```{r}
+levels(ds$GF)
+```
+
+# Run Binomial Mixed Model 
+
+```{r}
+library(lmerTest)
+
+m1 <- glmer(GF ~ 
+              cond*face + age + sex + target - 1 + 
+              (1|id), 
+            family = "binomial", 
+            data = ds)
+
+# Thought: this could be done only with face presentation time, instead of the categorical conditions? Is it different if they look long when face presentation time is long/short?
+summary(m1)
+```
+
+## Predict probabilities based on model
+
+```{r}
+p <- predict(m1,
+             type="response")
+ds$predicted <- p
+```
+
+```{r}
+library(ggplot2)
+ggplot(data=ds, aes(y=predicted, x=cond, col=sex)) + 
+  geom_jitter()
+```
+
+## Plot response ranges for 2 conditions
+
+```{r}
+dw <- fixef(m1)
+dw
+```
+```{r}
+X1 <- dw[3]
+
+long <- dw[1]
+short <- dw[2]
+X1.short <- dw[7]
+```
+```{r}
+X1_range <- seq(from=min(ds$face), to=max(ds$face), by=1)
+
+long_logits <- X1*X1_range +
+  long +
+  X1.short*X1_range*0
+
+short_logits <- X1*X1_range +
+  short +
+  X1.short*X1_range
+```
+```{r}
+long_probs <- exp(long_logits)/(1 + exp(long_logits))
+short_probs <- exp(short_logits)/(1 + exp(short_logits))
+
+library(tidyr)
+# first you have to get the information into a long dataframe, which is what ggplot likes :)
+plot.data <- data.frame(long=long_probs, short=short_probs, X1=X1_range)
+plot.data <- gather(plot.data, key=group, value=prob, long:short)
+head(plot.data)
+```
+
+```{r}
+ggplot(plot.data, aes(x=X1, y=prob, color=group)) + # asking it to set the color by the variable "group" is what makes it draw three different lines
+  geom_point() +
+  geom_path() + 
+  labs(x="face", y="P(outcome)", title="Probability of super important outcome") 
+```
+
+# Contrasts
+
+## Estimating cell means
+
+This is really only a demonstration because contrasts should be specified manually when an interaction is involved!
+
+```{r}
+library(emmeans)
+m.emm <- emmeans(m1, "cond")
+```
+
+```{r}
+library(broom)
+contrast(m.emm, 'tukey') %>%
+  broom::tidy()
+```
+```{r}
+m.emm.df <-
+  m.emm %>%
+  broom::tidy()
+
+m.emm.df %>%
+  ggplot(aes(cond, estimate, ymin=asymp.LCL, ymax=asymp.UCL)) +
+  geom_pointrange() +
+  ylab("GF")
+```
+
+

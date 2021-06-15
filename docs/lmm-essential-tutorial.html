@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Fitting and Interpreting a Multilevel (mixed) Model in R</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Hear me ROAR-R</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="blog.html">Blog</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Exploring your data
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="propensity-scores.html">Matching Subsamples</a>
+    </li>
+    <li>
+      <a href="geo-info.html">Modelling multi-site data</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="anova.html">Anova</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lm-assumptions.html">Assumptions</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    LMM
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="lmm-essential-tutorial.html">Essential Tutorial</a>
+    </li>
+    <li>
+      <a href="lmm-contrasts-tutorial.html">Customising Contrasts</a>
+    </li>
+    <li>
+      <a href="lmm-het-var.html">Modelling Heterogeneus Variance</a>
+    </li>
+    <li>
+      <a href="result-report.html">Reporting of Results</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    ML
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="ml_ts.html">Supervised Learning with Time Series for Beginners</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Fitting and Interpreting a Multilevel (mixed) Model in R</h1>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#initialize-session">Initialize Session:</a></li>
+<li><a href="#why-a-multilevel-model">Why a Multilevel Model?</a></li>
+<li><a href="#fitting-a-mixed-model-in-r">Fitting a Mixed Model in R</a></li>
+<li><a href="#understanding-the-summary-output">Understanding the Summary Output</a></li>
+<li><a href="#visualizing-random-and-fixed-effects">Visualizing random and fixed effects</a></li>
+<li><a href="#calculating-and-interpreting-confidence-intervals">Calculating and Interpreting Confidence Intervals</a></li>
+<li><a href="#the-final-step-plotting-the-model">The final step: plotting the model</a></li>
+<li><a href="#mixed-models-can-include-interaction-terms">Mixed models can include interaction terms</a></li>
+<li><a href="#diagnostic-plots">Diagnostic plots</a></li>
+</ul>
+</div>
+
+<div id="initialize-session" class="section level1">
+<h1>Initialize Session:</h1>
+<pre class="r"><code>data(&quot;sleepstudy&quot;)
+# install.packages(&quot;lmerTest&quot;)
+library(lmerTest)
+library(ggplot2)
+library(knitr)
+opts_template$set(figure_small = list(fig.height = 4, fig.width = 6)) </code></pre>
+</div>
+<div id="why-a-multilevel-model" class="section level1">
+<h1>Why a Multilevel Model?</h1>
+<p>Fitting a multilevel model in R is quite trivial, but interpreting the output, plotting the results is another story. Let’s go through all the steps of fitting and interpreting the model with some example data from a study on reaction times after different days of sleep deprivation. The measurements of reaction times is repeated 9 times for each subjects, with increasing levels of sleep deprivation:</p>
+<pre class="r"><code>kable(head(sleepstudy))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Reaction</th>
+<th align="right">Days</th>
+<th align="left">Subject</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">249.5600</td>
+<td align="right">0</td>
+<td align="left">308</td>
+</tr>
+<tr class="even">
+<td align="right">258.7047</td>
+<td align="right">1</td>
+<td align="left">308</td>
+</tr>
+<tr class="odd">
+<td align="right">250.8006</td>
+<td align="right">2</td>
+<td align="left">308</td>
+</tr>
+<tr class="even">
+<td align="right">321.4398</td>
+<td align="right">3</td>
+<td align="left">308</td>
+</tr>
+<tr class="odd">
+<td align="right">356.8519</td>
+<td align="right">4</td>
+<td align="left">308</td>
+</tr>
+<tr class="even">
+<td align="right">414.6901</td>
+<td align="right">5</td>
+<td align="left">308</td>
+</tr>
+</tbody>
+</table>
+<p>Reaction is our dependent variable, that varies across days. As it is obvious from the above data set, we have several measurements for each subject taken across the week. We are going to fit the model directly on this table. Differently from the tests we are more used to, such as Anova, we do not calculate averages or collapse observations on a condition: the more data points per subject we have, the better. Let’s have a look at the data:</p>
+<pre class="r"><code>linep &lt;- ggplot(data=sleepstudy, aes(y=Reaction, x=Days, color=Subject, group=Subject)) + 
+  geom_point() + geom_line() +
+  ggtitle(&quot;Spaghetti Plot of reaction times across days, by subject&quot;) + 
+  theme(legend.position = &quot;none&quot;) + scale_x_continuous(breaks = c(0,2,4,6,8))
+linep</code></pre>
+<p><img src="lmm-essential-tutorial_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>From the plot, we can make a series of observations:</p>
+<ol style="list-style-type: decimal">
+<li><p>The first data point at day 0 is set at different heights on the y axis, corresponding to a different baseline reaction time for each subject when he/she starts the experiment. The “starting point” of each participant is usually called “intercept”</p></li>
+<li><p>Some lines, corresponding to the degree of variation of Reaction Times between days, are steeper, some are smoother, some are nearly horizontal and so on: it means that some subjects will pass from high to low reactions time quickly, some of them will only change imperceptibly, some other will remain stable overall. The degree of variation of each participant is called “slope”</p></li>
+</ol>
+<p>These individual patterns are usually ignored by traditional tests, such as t-tests and anova, where it is necessary to collapse the dependent variable on one single level, such as:</p>
+<pre class="r"><code>mean.reaction &lt;- with(sleepstudy,aggregate(Reaction,
+          list(Day = Days),
+          mean))
+colnames(mean.reaction)[2] &lt;- &quot;Avg Reaction&quot;
+mean.reaction$`Avg Reaction` &lt;- round(mean.reaction$`Avg Reaction`)
+box &lt;- ggplot(data=sleepstudy, aes(y=Reaction, x=factor(Days))) + geom_boxplot() + 
+  ggtitle(&quot;Boxplot of reaction times across days&quot;) 
+require(gridExtra)
+g_tab2 &lt;- tableGrob(mean.reaction, rows = NULL)
+grid.arrange(box, g_tab2, ncol=2, nrow=1)</code></pre>
+<p><img src="lmm-essential-tutorial_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>It looks somewhat reducing now, compared to the first plot, right? Where did all the by-subject variation go? If we stick to the traditional approach, all the variation went up in smoke! A multilevel model is exactly letting us specifying different starting points (intercepts) and degrees of variations (slopes) for each subject. These parameters form part of the so-called “random effect” or “random error”. As every regression model, a multilevel model is specified by a formula, with a dependent/outcome/response variable (in the current example, Reaction), and some predictors (in the current example, Days). Furthermore, the model will include a specific expression (the random effect) to allow intercepts and slopes to vary by some unit of repetition (in this case, Subject and Days). Since the random effect expresses “variation”, all the other predictors are usually called “fixed” effects or terms. In this case, the factor Days works as a fixed predictor, but has both a fixed and a random effect. Let’s visualize this concepts in the formula, written using the syntax of the lmer function in R.</p>
+</div>
+<div id="fitting-a-mixed-model-in-r" class="section level1">
+<h1>Fitting a Mixed Model in R</h1>
+<pre class="r"><code>m1 &lt;- lmer(Reaction #this is our dependent variable
+           ~ Days + #this is the fixed term or predictor: the effect we are mostly 
+                    # interested in!
+             ( 1 + Days | Subject), #This expression means: 
+                                    # let each Subject have a different baseline RT 
+                                    # (intercept) and an individual level of variation 
+                                    # of RT between Days (slope) --&gt; let each Subject 
+                                    # have a varying intercept and slope
+           data=sleepstudy)</code></pre>
+<p>We fitted the model! We can visualize the results with the function summary:</p>
+<pre class="r"><code>summary(m1)</code></pre>
+<pre><code>## Linear mixed model fit by REML. t-tests use
+##   Satterthwaite&#39;s method [lmerModLmerTest]
+## Formula: Reaction ~ Days + (1 + Days | Subject)
+##    Data: sleepstudy
+## 
+## REML criterion at convergence: 1743.6
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.9536 -0.4634  0.0231  0.4634  5.1793 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev. Corr
+##  Subject  (Intercept) 612.10   24.741       
+##           Days         35.07    5.922   0.07
+##  Residual             654.94   25.592       
+## Number of obs: 180, groups:  Subject, 18
+## 
+## Fixed effects:
+##             Estimate Std. Error      df t value
+## (Intercept)  251.405      6.825  17.000  36.838
+## Days          10.467      1.546  17.000   6.771
+##             Pr(&gt;|t|)    
+## (Intercept)  &lt; 2e-16 ***
+## Days        3.26e-06 ***
+## ---
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##      (Intr)
+## Days -0.138</code></pre>
+</div>
+<div id="understanding-the-summary-output" class="section level1">
+<h1>Understanding the Summary Output</h1>
+<p>Even though our main focus is understanding the numerical output, the summary is remainding us that the model is linear, it has been fitted with Restricted Maximum Likelihood method (REML), and degrees of freedom have been calculated with the Satterthwaite approximation. All these parameters can be changed by an intermediate user: I will not dig any more deep here, but stick to the default formulation of the mixed model.</p>
+<p>The REML criterion at convergence corresponds to the number of iteriations reached for estimating the model (not really interesting for us, not usually reported in scientific papers). The section “scaled residuals” are the descriptives of the residuals, that are more relevant in case the aim is predicting new values - which is not the case. So let’s move on.</p>
+<p>The random effects contain two parameters: Variance and Standard Deviation. This is all what random effects are about after all: variation in the data. We can see here that variations between individual subjects are accounting for a big part of the variance (612), while the variation of subjects between days is smaller (36), but still noticeable. We also have the residual variation, the variance that is not explained by neither individual nor within-days variation. It is quite high here: it is partly a good sign, as it might indicate that part of the variance is indeed related to some fixed effect. Lastly, we have the “Corr” parameter: it indicates the correlation between the random effects. In this example, the correlation between observations in different days within the same subject is infinitesimal (0.07). In case the model is too complicated (for example, with many predictors, with interactions, and fails to converge), it can be specified in the formula that the random effects are not correlated by writing (1 + Days || Subject).</p>
+<p>With regard to the fixed effects, we have two rows, one for the intercept, and one for the fixed predictor, Days. Let’s summarise how to interpret the fixed effects table:</p>
+<ol style="list-style-type: decimal">
+<li>In general, the estimate is the measure of the effect and can be called “coefficient”. A very small estimate means that the predictor has a very small effect. A negative estimate means that the predictor decreases the response variable. The estimate is on the same scale of the response variable: if we are investigating the variations of neonatal heights in cm, and the predictor “mom_height” has an estimate of 2.5, it means that one unit increase of “mom_height” produces an increase of 2.5 cm of the baby’s height.</li>
+</ol>
+<p>In other kinds of models, such as binomial models, the coefficient estimate does not represent an average, but a probability. For example, we may have fitted a binomial model for investigating the proportion of mutation of a certain gene (coded as a binary factor 0/1) depending on mom_age. In that case, an estimate of 2.5 for mom_age indicates the <strong>probablity</strong> of an infant of having a mutation depending on his mom’s age. The estimate is 4 times the actual difference in proportion: in this case we have a 2.5/4=0.6*100=60% higher probability that an infant will have a mutation for a 1 unit increase in mom_age.</p>
+<ol start="2" style="list-style-type: decimal">
+<li><p>The Std. Error is the Standard Error, or the uncertainty in the coefficient estimate. Of course we need this parameter: the coefficient estimate is an average, calculated from the individual estimates that we specified with the random effect. As all the averages, it comes with its own standard error. Std error should not be bigger than the coefficient estimate, as it would indicate that the coefficient estimate is very imprecise. In general, we can calculate a confidence interval around the coefficient estimate of 2+/- Std Errors. In this example, we are pretty confident that the the estimate of the effect of Days will be no less that 10-1.5 and no more than 10+1.5.</p></li>
+<li><p>df are the Degress of Freedom that, like in every statistical test, depend on the sample size (in this case, 18 total subjects)</p></li>
+<li><p>t value is the ratio between the coefficient estimate and the std error: for Days, 10.467/1.546 = 6.77. As a general rule, a t-value above 2 indicates a significant result. In binomial models, this parameter is called z-value.</p></li>
+<li><p>the Pr(&gt;|t|) is the p-value. It has been introduced recently inside the lmer function and some people (mostly statisticians) still think that it should not be considered, but that coefficients estimates ONLY should be looked at instead. However, it is useful to include a p-value since it is the only measure that most people understand. A p-value below 0.05 indicates that the effect of the fixed predictor (can be Days, or mom_height) is affecting the dependent variable above the chance level.</p></li>
+</ol>
+</div>
+<div id="visualizing-random-and-fixed-effects" class="section level1">
+<h1>Visualizing random and fixed effects</h1>
+<p>All of these parameters can be visualized in isolation from the whole summary:</p>
+<ol style="list-style-type: decimal">
+<li>Random Effects:</li>
+</ol>
+<pre class="r"><code>VarCorr(m1, comp=c(&quot;Variance&quot;,&quot;Std.Dev.&quot;), digits=2)</code></pre>
+<pre><code>##  Groups   Name        Std.Dev. Corr 
+##  Subject  (Intercept) 24.7407       
+##           Days         5.9221  0.066
+##  Residual             25.5918</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Fixed effects:</li>
+</ol>
+<pre class="r"><code>fixef(m1)</code></pre>
+<pre><code>## (Intercept)        Days 
+##   251.40510    10.46729</code></pre>
+<p>This “10.46729” tells us that for every variation in a unit of Days (in this case, 1), the Reaction increases of 10.5 ms on average.</p>
+<p>The “(Intercept)” that we find together with the fixed predictor coefficient is a little bit more trickier: it is a constant, and it represents the value of Reaction when all the predictors are set to zero. Most of the times, this “(Intercept)” does not make much sense and it is ignored: in the small example of neonatal height, the “(Intercept)” would indicate the value of a baby’s height whem mom_height is zero - but of course this is impossible. In the sleepstudy example, the “(Intercept)” still makes sense, since we have a baseline-0 day.</p>
+<p>But what about all those varying intercepts and slopes? Since the coefficient estimate is a unique value and an <strong>average</strong>, one could ask why we have even bothered with all this complexity. The justification is the way the coefficient estimate is calculated. It is actually the average between the individual coefficients calculated by subject and by days. But where are these individual coefficients? Just below our nose:</p>
+<pre class="r"><code>coef(m1)</code></pre>
+<pre><code>## $Subject
+##     (Intercept)       Days
+## 308    253.6637 19.6662617
+## 309    211.0064  1.8476053
+## 310    212.4447  5.0184295
+## 330    275.0957  5.6529356
+## 331    273.6654  7.3973743
+## 332    260.4447 10.1951090
+## 333    268.2456 10.2436499
+## 334    244.1725 11.5418676
+## 335    251.0714 -0.2848792
+## 337    286.2956 19.0955511
+## 349    226.1949 11.6407181
+## 350    238.3351 17.0815038
+## 351    255.9830  7.4520239
+## 352    272.2688 14.0032871
+## 369    254.6806 11.3395008
+## 370    225.7921 15.2897709
+## 371    252.2122  9.4791297
+## 372    263.7197 11.7513080
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;coef.mer&quot;</code></pre>
+<p>The model contains different intercepts (first column) and slopes (second column) for each of the 18 subjects. Averaging the 18 “(Intercept)” and Days estimates gives exactly the “(Intercept)” and coefficient estimates given in the summary:</p>
+<pre class="r"><code>mean(coef(m1)$Subject[,1])</code></pre>
+<pre><code>## [1] 251.4051</code></pre>
+<pre class="r"><code>mean(coef(m1)$Subject[,2])</code></pre>
+<pre><code>## [1] 10.46729</code></pre>
+<p>The same is true for the random effect, as we have subject- and day- level errors:</p>
+<pre class="r"><code>ranef(m1)</code></pre>
+<pre><code>## $Subject
+##     (Intercept)        Days
+## 308   2.2585509   9.1989758
+## 309 -40.3987381  -8.6196806
+## 310 -38.9604090  -5.4488565
+## 330  23.6906196  -4.8143503
+## 331  22.2603126  -3.0699116
+## 332   9.0395679  -0.2721770
+## 333  16.8405086  -0.2236361
+## 334  -7.2326151   1.0745816
+## 335  -0.3336684 -10.7521652
+## 337  34.8904868   8.6282652
+## 349 -25.2102286   1.1734322
+## 350 -13.0700342   6.6142178
+## 351   4.5778642  -3.0152621
+## 352  20.8636782   3.5360011
+## 369   3.2754656   0.8722149
+## 370 -25.6129993   4.8224850
+## 371   0.8070461  -0.9881562
+## 372  12.3145921   1.2840221
+## 
+## with conditional variances for &quot;Subject&quot;</code></pre>
+<p>The average estimate coefficient is equal to each individual coefficient estimate minus its relative error. For example:</p>
+<pre class="r"><code>#First Subject:
+coef(m1)$Subject[1,2] - ranef(m1)$Subject[1,2]</code></pre>
+<pre><code>## [1] 10.46729</code></pre>
+<pre class="r"><code>#Second Subject:
+coef(m1)$Subject[2,2] - ranef(m1)$Subject[2,2]</code></pre>
+<pre><code>## [1] 10.46729</code></pre>
+<p>But what do all this coefficients mean? As we introduced previously, the coefficients are estimates of the value of Reaction. Given the estimate coefficient and the random error, we can calculate an estimated value of Reaction for each subject and each day. Each subject has a final Reaction of "Intercept + Slope*x", where x are the original values of the fixed predictor - 1 to 9 Days in the example. For example, on Day 1, for subject 308 we have:</p>
+<pre class="r"><code>253.6637 + 19.6662580*1</code></pre>
+<pre><code>## [1] 273.33</code></pre>
+<p>A final reaction of 273.2 ms. It is slightly different from the average estimate Reaction, calculated with the same formula but with the average intercept and slope:</p>
+<pre class="r"><code>251.40510 + 10.46729*1</code></pre>
+<pre><code>## [1] 261.8724</code></pre>
+<p>The difference between the Reaction of subject 308 and the average Reaction is exactly equal to the sum of the random errors of subject 308:</p>
+<pre class="r"><code>273.33 - 261.8724</code></pre>
+<pre><code>## [1] 11.4576</code></pre>
+<pre class="r"><code>2.2585647 +  9.1989720</code></pre>
+<pre><code>## [1] 11.45754</code></pre>
+</div>
+<div id="calculating-and-interpreting-confidence-intervals" class="section level1">
+<h1>Calculating and Interpreting Confidence Intervals</h1>
+<p>After we understood correctly the output of the model, we should be able to report it correctly and plot it. For mixed model, it is generally important to explain the formula that we used, and list the values of the average coefficient estimate, standard error, df, t-value and p-value. Also, confidence intervals are generally reported. Various methods exist to calculate them. A quite popular one is to use use a “bootstrap” method, that is to do the calculation with a certain number of simulations (to make the estimate more precise):</p>
+<pre class="r"><code>set.seed(88)  # I set the seed when the generation of new data is involved... 
+              # otherwise the estimate will be different every time the script is run
+ci &lt;- confint(m1, method=&quot;boot&quot;, nsim=10)
+library(dplyr)
+ci &lt;- add_rownames(data.frame(ci), &quot;Term&quot;)
+colnames(ci) &lt;- c(&quot;Term&quot;, &quot;CI 2.5%&quot;, &quot;CI 97.5%&quot;)
+kable(ci[5:6,])</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="right">CI 2.5%</th>
+<th align="right">CI 97.5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">242.44412</td>
+<td align="right">259.9099</td>
+</tr>
+<tr class="even">
+<td align="left">Days</td>
+<td align="right">8.70156</td>
+<td align="right">12.8210</td>
+</tr>
+</tbody>
+</table>
+<p>The confidence interval of a coefficient estimate indicates that only in the 5% cases the coefficient estimates might fall below CI 2.5% or above CI 97.5%. In psychological experiments, we need to consider two aspects of the CI:</p>
+<ul>
+<li><p>Does the range between CI 2.5% and CI 97.5% contains zero? If yes, there is a high chance that the effect of the predictor may be 0, thus not effect at all!</p></li>
+<li><p>How wide is the CI: an excessively wide CI means that the error of estimation is too big, and the coefficient estimate might be imprecise</p></li>
+<li><p>Are the signs of the CIs discordant? Of course, if the the signs are discordant, the range contains zero. But also: our model is not capable of estimating whether our fixed predictor decreases/increases the dependent variable!</p></li>
+</ul>
+</div>
+<div id="the-final-step-plotting-the-model" class="section level1">
+<h1>The final step: plotting the model</h1>
+<p>Finally, we have come to plot our data and model. We will plot the data points, and the regression lines based on our average estimate coefficients:</p>
+<pre class="r"><code>ggplot(data=sleepstudy, aes(x=Days, y=Reaction, col=Subject, shape=Subject)) + 
+  geom_jitter(size=2) + theme(legend.position = &quot;none&quot;) + 
+  scale_shape_manual(values = 
+                       c(15,16,17,18,19,20,21,22,23,24,15,16,17,18,19,20,21,22,23,24,25)) + 
+  geom_abline(intercept = fixef(m1)[1], slope=fixef(m1)[2]) + #Regression Line (RL). 
+                                                              # At zero, the line starts from 
+                                                              # 251.4, and increases of 10.4 
+                                                              # for every unit of Day
+  geom_abline(intercept = ci$`CI 97.5%`[5], slope=ci$`CI 97.5%`[6], col=&quot;grey&quot;) + #Upper Bound of RL
+  geom_abline(intercept = ci$`CI 2.5%`[5], slope=ci$`CI 2.5%`[6], col=&quot;grey&quot;) +  #Lower Bound of RL
+  scale_x_continuous(breaks = c(0,2,4,6,8)) +
+  ggtitle(&quot;Reaction plotted on Days&quot;) +
+  geom_text(aes(5, 300, label=&quot;X&quot;), col=&quot;red&quot;, size=10) </code></pre>
+<p><img src="lmm-essential-tutorial_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>The black regression line represent the average effect of Days on Reaction. It is clearly an ascending line, with a quite steep increase, showing that Reaction is proportionally increasing of 10 each Day. In fact, if we start roughly from a baseline Reaction of 250 ms at day 0, we have a Reaction of 300 at Day 5 (250 + 10*5), as indicated by the red cross.</p>
+<p>Of course, we can also plot all the regression lines that we have for each subject. Let’s try with subject 308:</p>
+<pre class="r"><code>fe &lt;- coef(m1)$Subject
+fe &lt;- add_rownames(data.frame(fe),&quot;Subject&quot;)
+sub &lt;- filter(sleepstudy, Subject==&quot;308&quot;)
+ggplot(data=sub, aes(x=Days, y=Reaction)) + geom_jitter(size=2, alpha=0.5) + 
+  geom_abline(intercept=fe$X.Intercept.[1],slope=fe$Days[1]) +
+  geom_abline(intercept=fixef(m1)[1],slope=fixef(m1)[2], linetype=&quot;dashed&quot;) + 
+  labs(title=&quot;Observations and RL of Subject 308 compared to the Avg RL&quot;, 
+       caption=&quot;____ Individual Regression Line \n - - - - Avg Regression Line&quot;) + 
+  scale_x_continuous(breaks = c(0,2,4,6,8))</code></pre>
+<p><img src="lmm-essential-tutorial_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+</div>
+<div id="mixed-models-can-include-interaction-terms" class="section level1">
+<h1>Mixed models can include interaction terms</h1>
+<p>Example:</p>
+<pre class="r"><code>set.seed(88)
+lunch &lt;- sample(c(0,1), replace=TRUE, size=18)
+sleepstudy$lunch &lt;- factor(lunch)
+head(sleepstudy)</code></pre>
+<pre><code>##   Reaction Days Subject lunch
+## 1 249.5600    0     308     0
+## 2 258.7047    1     308     0
+## 3 250.8006    2     308     1
+## 4 321.4398    3     308     0
+## 5 356.8519    4     308     1
+## 6 414.6901    5     308     1</code></pre>
+<p>In this dataset, the fact that the participant had lunch or not before the experiment is specified as a factor with 2 levels (0 and 1). We can specify an interaction between Day and Lunch in the formula:</p>
+<pre class="r"><code>m2 &lt;- lmer(Reaction 
+           ~ Days * lunch + 
+             ( 1 + Days | Subject), 
+           data=sleepstudy)
+summary(m2)</code></pre>
+<pre><code>## Linear mixed model fit by REML. t-tests use
+##   Satterthwaite&#39;s method [lmerModLmerTest]
+## Formula: 
+## Reaction ~ Days * lunch + (1 + Days | Subject)
+##    Data: sleepstudy
+## 
+## REML criterion at convergence: 1735.3
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -3.9252 -0.4668  0.0292  0.4607  5.1733 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev. Corr
+##  Subject  (Intercept) 633.2    25.163       
+##           Days         35.2     5.933   0.07
+##  Residual             658.0    25.652       
+## Number of obs: 180, groups:  Subject, 18
+## 
+## Fixed effects:
+##             Estimate Std. Error      df t value
+## (Intercept)  248.112      8.236  31.223  30.127
+## Days          11.234      1.769  27.785   6.349
+## lunch1         5.928      8.054 159.466   0.736
+## Days:lunch1   -1.380      1.541 157.663  -0.896
+##             Pr(&gt;|t|)    
+## (Intercept)  &lt; 2e-16 ***
+## Days        7.45e-07 ***
+## lunch1         0.463    
+## Days:lunch1    0.372    
+## ---
+## Signif. codes:  
+## 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##             (Intr) Days   lunch1
+## Days        -0.318              
+## lunch1      -0.543  0.407       
+## Days:lunch1  0.457 -0.484 -0.840</code></pre>
+<p>The additional question that we asked here is whether there is an interdependence of the effect of Day and Lunch. The result relative to Days:lunch in the above output should be interpreted like this: the difference between days is lower for those Subject that had lunch (where lunch==1). In other words, a Subject that had lunch on the Day of the experiment, will have a Reaction that is weithed by the interaction term.</p>
+<p>In the specific case, the participant with lunch will start with a little higher Reaction compared to fast subject (because we add 5.92 to the starting point - the intercept); however, the final Reaction at Day 9 will be a little bit less (because every day we are subtracting 1.38).</p>
+<p>By doing the calculation, the average Reaction for participants who had lunch on Day 1 will be:</p>
+<pre class="r"><code>(248.11 + 5.92) + (11.23 - 1.38)*1</code></pre>
+<pre><code>## [1] 263.88</code></pre>
+<p>while the average reaction when lunch was 0 is simply:</p>
+<pre class="r"><code>248.11 + 11.23*1</code></pre>
+<pre><code>## [1] 259.34</code></pre>
+<p>On Day 9, the situation is different. For fed subjects:</p>
+<pre class="r"><code>(248.11 + 5.92) + (11.23 - 1.38)*9</code></pre>
+<pre><code>## [1] 342.68</code></pre>
+<p>while the average reaction when lunch was 0 is:</p>
+<pre class="r"><code>248.11 + 11.23*9</code></pre>
+<pre><code>## [1] 349.18</code></pre>
+<p>A very handful way of understanding interactions is plotting them.</p>
+<pre class="r"><code>ggplot(data=sleepstudy, aes(x=Days, y=Reaction, col=lunch)) + geom_jitter() + 
+  geom_abline(intercept = 248.11 + 5.92, slope = 11.23 - 1.38, linetype=&quot;dashed&quot;) + 
+  geom_abline(intercept = 248.11, slope = 11.23) +
+  labs(title=&quot;Model with interaction Days:lunch&quot;, 
+       caption=&quot;___ No Lunch \n - - - With Lunch&quot;) + 
+  scale_x_continuous(breaks = c(0,2,4,6,8))</code></pre>
+<p><img src="lmm-essential-tutorial_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+<p><em>Note: Regarding this last example with lunch… of course, it does not make sense, as I made up the data with the sample function… the column lunch is a random sequence of zeros and ones! I did not even look at the p-value, but only at the coefficient estimate for demonstrative purposes</em></p>
+</div>
+<div id="diagnostic-plots" class="section level1">
+<h1>Diagnostic plots</h1>
+<p>Their purpose is to demonstrate that the model fits the data correctly.</p>
+<p>The QQNorm plot shows theoretical and sample data extracted from the observed values (representative of quantiles) and aims to demonstrate that the data fits the normal distribution:</p>
+<pre class="r"><code>qqnorm(resid(m1)) ; qqline(resid(m1), col=&quot;red&quot;)</code></pre>
+<p><img src="lmm-essential-tutorial_files/figure-html/unnamed-chunk-28-1.png" width="576" /></p>
+<p>Another important diagnostic plot is the Residual Plot. Residuals are “the difference between the observed value and the estimated value of the quantity of interest (for example, a sample mean)” (from wikipedia). In the case of a regression, residuals represent the distance between the depedent variable (Reaction) and its estimates worked out by the regression function (the so-called fitted values). Plotting the residuals can demonstrate that various important assumptions are respected:</p>
+<ol style="list-style-type: decimal">
+<li>Homogeneity: data points should not be dispersed. We might spot some outliers.</li>
+</ol>
+<pre class="r"><code>ggplot(data = sleepstudy, aes(x = predict(m1), y = cbind(resid(m1)))) + 
+  geom_point(size = 3, col = &quot;red&quot;, alpha = 0.6) +
+  geom_abline(slope = 0,
+              intercept = 0,
+              col = &quot;gray&quot;) + 
+  labs(x = &quot;Fitted Values&quot;, y = &quot;Residuals&quot;, 
+       title = &quot;Residuals vs Fitted&quot;, 
+       subtitle = &quot;Homogeneity&quot;) + 
+  coord_fixed() </code></pre>
+<p><img src="lmm-essential-tutorial_files/figure-html/unnamed-chunk-29-1.png" width="576" /></p>
+<ol start="2" style="list-style-type: decimal">
+<li>Normality: see the shape, is it normally distributed?</li>
+</ol>
+<pre class="r"><code>hist(resid(m1), main = &quot;Histogram of Residuals (normality)&quot;, 
+     xlab = &quot;Residuals&quot;, col = &quot;red&quot;)</code></pre>
+<p><img src="lmm-essential-tutorial_files/figure-html/unnamed-chunk-30-1.png" width="576" /></p>
+<ol start="3" style="list-style-type: decimal">
+<li>Independence: finally, plotting the residuals vs the independent variables</li>
+</ol>
+<p><code>{ropts.label = "figure_small"} ggplot(data = sleepstudy, aes(x = Days, y = cbind(resid(m1)))) +    geom_jitter(size = 3, col = "red", alpha = 0.5) +   labs(y = "Residuals", title = "Residuals vs Days", subtitle = "Independence") +    scale_x_continuous(breaks = c(0,2,4,6,8))</code></p>
+<pre class="r"><code>ggplot(data = sleepstudy, aes(x = lunch, y = cbind(resid(m1)))) + 
+  geom_boxplot(fill = &quot;red&quot;, alpha = 0.5) +
+  labs(y = &quot;Residuals&quot;, 
+       title = &quot;Residuals vs Lunch&quot;, 
+       subtitle = &quot;Independence&quot;) </code></pre>
+<p><img src="lmm-essential-tutorial_files/figure-html/unnamed-chunk-31-1.png" width="576" /></p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
